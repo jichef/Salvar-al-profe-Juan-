@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saving Teacher Juan!</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="game.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-images">
+                <img src="cabecera.png" alt="Saving Teacher Juan" class="header-image">
+                <img src="teacher.png" alt="Teacher" class="teacher-image">
+            </div>
+        </header>
+
+        <div class="game-container">
+            <!-- Panel izquierdo: Configuración y Canvas -->
+            <div class="left-panel">
+                <div class="controls-top">
+                    <div class="difficulty-selector">
+                        <label for="difficulty">Dificultad:</label>
+                        <select id="difficulty">
+                            <option value="7">Básico</option>
+                            <option value="11">Intermedio</option>
+                            <option value="15">Complejo</option>
+                            <option value="21">Extremo</option>
+                        </select>
+                    </div>
+                    <div class="character-selector">
+                        <label for="character">Personaje:</label>
+                        <select id="character">
+                            <option value="checa.png">Profe Juan</option>
+                            <option value="muñeco.png">Emoji</option>
+                            <option value="adventurer.png">Aventurero</option>
+                            <option value="custom">¡Yo!</option>
+                        </select>
+                        <input type="file" id="customCharacter" accept="image/*" style="display: none;">
+                        <button id="uploadCharacterBtn" class="btn-upload" style="display: none;" title="Subir foto">📷</button>
+                    </div>
+                    <div class="timer">
+                        <span id="timer">⏱ 0 s</span>
+                    </div>
+                    <div class="keyboard-toggle">
+                        <label>
+                            <input type="checkbox" id="keyboardEnabled" checked>
+                            Activar teclas
+                        </label>
+                    </div>
+                    <div class="audio-toggle">
+                        <label>
+                            <input type="checkbox" id="audioEnabled" checked>
+                            🔊 Sonido
+                        </label>
+                    </div>
+                    <div class="edit-controls">
+                        <button id="editModeBtn" class="btn btn-secondary btn-small" title="Editar laberinto">✏️</button>
+                        <button id="loadBtn" class="btn btn-secondary btn-small" title="Cargar laberinto">📂</button>
+                        <button id="saveBtn" class="btn btn-secondary btn-small" title="Guardar laberinto">💾</button>
+                        <button id="generatePdfBtn" class="btn btn-secondary btn-small" title="Generar PDF">📄</button>
+                    </div>
+                </div>
+
+                <canvas id="gameCanvas"></canvas>
+            </div>
+
+            <!-- Panel central: Secuencia de movimientos -->
+            <div class="middle-panel">
+                <h3>Secuencia de Movimientos</h3>
+                <div id="sequenceContainer" class="sequence-container"></div>
+                
+                <div class="control-buttons">
+                    <button id="startBtn" class="btn btn-success">▶️ Iniciar</button>
+                    <button id="newBtn" class="btn btn-primary">🔁 Nuevo</button>
+                    <button id="clearBtn" class="btn btn-warning">🗑️ Limpiar</button>
+                    <button id="rankingBtn" class="btn btn-info">🏆 Ranking</button>
+                </div>
+            </div>
+
+            <!-- Panel derecho: Instrucciones y botones de movimiento -->
+            <div class="right-panel">
+                <div class="instructions">
+                    <h3>Instrucciones:</h3>
+                    <ul>
+                        <li>Usa las flechas ← ↑ → ↓ para mover</li>
+                        <li>Barra espaciadora para Salto</li>
+                        <li>Si no activas teclas, usa solo botones</li>
+                        <li>Programa tu secuencia y presiona Iniciar</li>
+                        <li>¡Salva al profe Juan!</li>
+                    </ul>
+                </div>
+
+                <div class="movement-buttons">
+                    <h3>Movimientos</h3>
+                    <div class="keyboard-layout">
+                        <div class="arrow-keys">
+                            <div class="arrow-row">
+                                <button id="upBtn" class="btn btn-arrow">⬆️</button>
+                            </div>
+                            <div class="arrow-row">
+                                <button id="leftBtn" class="btn btn-arrow">⬅️</button>
+                                <button id="downBtn" class="btn btn-arrow">⬇️</button>
+                                <button id="rightBtn" class="btn btn-arrow">➡️</button>
+                            </div>
+                        </div>
+                        <button id="jumpBtn" class="btn btn-spacebar">⏭️ Salto</button>
+                        <div class="credits">
+                            <p class="credits-author">Juan Ignacio Checa Franquelo. 2025</p>
+                            <p class="credits-school">Colegio Nuestra Sra. de la Consolación (Granada)</p>
+                            <p class="credits-email">checa@colegiolaconsolacion.com</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para ranking -->
+    <div id="rankingModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>🏆 Ranking de Rescatadores</h2>
+            <div id="rankingContent"></div>
+        </div>
+    </div>
+
+    <!-- Modal para nombre del ganador -->
+    <div id="winnerModal" class="modal">
+        <div class="modal-content">
+            <h2>🎉 ¡Salvaste al profe Juan!</h2>
+            <p>¿Cómo te llamas, héroe o heroína?</p>
+            <input type="text" id="winnerName" placeholder="Tu nombre">
+            <button id="submitName" class="btn btn-success">Guardar</button>
+        </div>
+    </div>
+
+    <!-- Modal para generar PDF -->
+    <div id="pdfModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closePdfModal">&times;</span>
+            <h2>📄 Generar PDF de Laberintos</h2>
+            <p>Selecciona el nivel de dificultad para los mapas:</p>
+            <div class="pdf-options">
+                <label>
+                    <input type="radio" name="pdfDifficulty" value="5" checked>
+                    Fácil (5x5)
+                </label>
+                <label>
+                    <input type="radio" name="pdfDifficulty" value="7">
+                    Intermedio (7x7)
+                </label>
+                <label>
+                    <input type="radio" name="pdfDifficulty" value="9">
+                    Difícil (9x9)
+                </label>
+            </div>
+            <p style="margin-top: 15px; font-size: 14px; color: #666;">
+                <strong>Página 1:</strong> 10 mapas con 20 casillas de solución cada uno<br>
+                <strong>Página 2:</strong> 8 mapas con soluciones en flechas (⬆⬇⬅➡)
+            </p>
+            <button id="confirmPdfBtn" class="btn btn-success">Generar PDF</button>
+        </div>
+    </div>
+
+    <!-- Audio elements -->
+    <audio id="suspenseAudio" loop>
+        <source src="out.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="adventureAudio" loop>
+        <source src="aventura.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="errorAudio">
+        <source src="error.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="fanfareAudio">
+        <source src="fanfarria.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="jumpAudio">
+        <source src="salto.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- jsPDF library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="leaves-border.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>

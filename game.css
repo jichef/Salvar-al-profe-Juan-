@@ -1,0 +1,828 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+    background-image: url('fondo.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh;
+    padding: 10px;
+}
+
+.container {
+    max-width: 1600px;
+    margin: 0 auto;
+    width: 100%;
+    position: relative;
+    padding: 20px 40px 40px 40px; /* Espacio para las hojas decorativas más grandes */
+}
+
+header {
+    text-align: center;
+    color: white;
+    margin-bottom: 20px;
+    position: relative;
+    /* Sin z-index para permitir que los hijos tengan z-index independientes */
+}
+
+header h1 {
+    font-family: 'Poppins', 'Inter', sans-serif;
+    font-size: 2.5em;
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    letter-spacing: -0.5px;
+}
+
+/* Contenedor de imágenes del header */
+.header-images {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* Imagen de cabecera que sale de entre las hojas */
+.header-image {
+    height: auto;
+    max-height: 140px;
+    filter: drop-shadow(3px 3px 8px rgba(0, 0, 0, 0.4));
+    animation: headerFadeIn 1.2s ease-out forwards;
+    position: relative;
+    z-index: 100; /* Por encima de las hojas (50) y del game-container */
+}
+
+/* Imagen del teacher totalmente cubierto por las hojas */
+.teacher-image {
+    height: auto;
+    max-height: 185px;
+    filter: drop-shadow(3px 3px 8px rgba(0, 0, 0, 0.4));
+    animation: teacherFadeIn 1.2s ease-out forwards;
+    position: relative;
+    z-index: -2;
+    margin-bottom: -5px;
+
+}
+
+@keyframes headerFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes teacherFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(20px) scale(1); /* Bajar 20px para alinear con game-container */
+    }
+}
+
+.game-container {
+    display: flex;
+    gap: 20px;
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    min-width: 0;
+    position: relative;
+}
+
+/* Panel izquierdo */
+.left-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    min-width: 300px;
+}
+
+.controls-top {
+    display: grid;
+    grid-template-columns: auto auto auto auto auto auto;
+    align-items: center;
+    padding: 4px 6px;
+    background: #f5f5f5;
+    border-radius: 6px;
+    gap: 6px;
+    justify-content: space-between;
+}
+
+.difficulty-selector label,
+.character-selector label,
+.keyboard-toggle label,
+.audio-toggle label {
+    font-weight: 600;
+    margin-right: 2px;
+    font-size: 0.75em;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    letter-spacing: 0.2px;
+}
+
+.keyboard-toggle input[type="checkbox"],
+.audio-toggle input[type="checkbox"] {
+    margin: 0;
+    width: 12px;
+    height: 12px;
+}
+
+.difficulty-selector select,
+.character-selector select {
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid #667eea;
+    font-size: 0.75em;
+}
+
+.character-selector {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-upload {
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid #667eea;
+    background: #667eea;
+    color: white;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s;
+}
+
+.btn-upload:hover {
+    background: #5568d3;
+    transform: scale(1.05);
+}
+
+.timer {
+    font-size: 0.95em;
+    font-weight: bold;
+    color: #667eea;
+    white-space: nowrap;
+}
+
+#gameCanvas {
+    border: 3px solid #333;
+    border-radius: 8px;
+    background: white;
+    display: block;
+    margin: 0 auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.edit-controls {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+}
+
+.btn-small {
+    padding: 6px;
+    font-size: 0.95em;
+    white-space: nowrap;
+    width: 32px;
+    height: 32px;
+    line-height: 1;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Panel central */
+.middle-panel {
+    flex: 0 0 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    min-width: 250px;
+}
+
+.middle-panel h3 {
+    font-family: 'Poppins', 'Inter', sans-serif;
+    text-align: center;
+    color: #333;
+    font-size: 1.2em;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    flex-shrink: 0;
+}
+
+.sequence-container {
+    flex: 0 0 auto;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    overflow-y: auto;
+    height: 350px;
+    background: #fafafa;
+}
+
+.sequence-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px;
+    margin-bottom: 5px;
+    background: white;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    font-size: 0.95em;
+}
+
+.sequence-item.completed {
+    background: #d4edda;
+    border-color: #28a745;
+}
+
+.sequence-item-text {
+    flex: 1;
+}
+
+.sequence-item-tick {
+    color: green;
+    font-size: 1.2em;
+    margin-right: 5px;
+}
+
+.sequence-item-delete {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    padding: 2px 8px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.sequence-item-delete:hover {
+    background: #c82333;
+}
+
+.control-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+/* Panel derecho */
+.right-panel {
+    flex: 0 0 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 250px;
+}
+
+.instructions {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 2px solid #667eea;
+}
+
+.instructions h3 {
+    font-family: 'Poppins', 'Inter', sans-serif;
+    color: #667eea;
+    margin-bottom: 10px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+}
+
+.instructions ul {
+    list-style-position: inside;
+    line-height: 1.8;
+    font-size: 0.95em;
+}
+
+.movement-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.movement-buttons h3 {
+    font-family: 'Poppins', 'Inter', sans-serif;
+    text-align: center;
+    color: #333;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+}
+
+/* Diseño de teclado */
+.keyboard-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+}
+
+.arrow-keys {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+}
+
+.arrow-row {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    align-items: center;
+}
+
+.arrow-row:first-child {
+    /* Centrar la flecha arriba usando width fijo */
+    width: 162px; /* Mismo ancho que la barra espaciadora */
+}
+
+/* Botones */
+.btn {
+    font-family: 'Inter', sans-serif;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    letter-spacing: 0.3px;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn:hover:not(:disabled) {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.btn:active:not(:disabled) {
+    transform: translateY(-1px) scale(0.98);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #5568d3 0%, #5f3a82 100%);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+    background: linear-gradient(135deg, #218838 0%, #1aa179 100%);
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    color: #333;
+}
+
+.btn-warning:hover:not(:disabled) {
+    background: linear-gradient(135deg, #e0a800 0%, #e68900 100%);
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    color: white;
+}
+
+.btn-info:hover:not(:disabled) {
+    background: linear-gradient(135deg, #138496 0%, #0f6674 100%);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #8fbc8f 0%, #6b8e6b 100%);
+    color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #7aa87a 0%, #5a7a5a 100%);
+}
+
+/* Botones de flechas (teclas de cursor) */
+.btn-arrow {
+    background: linear-gradient(145deg, #f0f0f0 0%, #e0e0e0 100%);
+    color: #333;
+    width: 50px;
+    height: 50px;
+    padding: 0;
+    font-size: 1.5em;
+    border-radius: 8px;
+    border: 2px solid #ccc;
+    box-shadow: 0 3px 0 #bbb, 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-arrow:hover:not(:disabled) {
+    background: linear-gradient(145deg, #fff 0%, #f0f0f0 100%);
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 0 #667eea, 0 6px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-arrow:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: 0 1px 0 #bbb, 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Botón de salto (barra espaciadora) */
+.btn-spacebar {
+    background: linear-gradient(145deg, #f0f0f0 0%, #e0e0e0 100%);
+    color: #333;
+    width: 162px; /* 3 botones de 50px + 2 gaps de 4px = 158px + padding */
+    height: 50px;
+    padding: 0;
+    font-size: 1em;
+    font-weight: 600;
+    border-radius: 8px;
+    border: 2px solid #ccc;
+    box-shadow: 0 3px 0 #bbb, 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-spacebar:hover:not(:disabled) {
+    background: linear-gradient(145deg, #fff 0%, #f0f0f0 100%);
+    border-color: #28a745;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 0 #28a745, 0 6px 12px rgba(40, 167, 69, 0.3);
+}
+
+.btn-spacebar:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: 0 1px 0 #bbb, 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Efecto de tecla presionada (para teclado) */
+.btn-arrow.key-pressed {
+    transform: translateY(1px) !important;
+    box-shadow: 0 1px 0 #bbb, 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+    background: linear-gradient(145deg, #e0e0e0 0%, #d0d0d0 100%) !important;
+    border-color: #667eea !important;
+}
+
+.btn-spacebar.key-pressed {
+    transform: translateY(1px) !important;
+    box-shadow: 0 1px 0 #bbb, 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+    background: linear-gradient(145deg, #e0e0e0 0%, #d0d0d0 100%) !important;
+    border-color: #28a745 !important;
+}
+
+/* Créditos */
+.credits {
+    margin-top: 10px;
+    text-align: center;
+    width: 162px; /* Mismo ancho que el botón de salto */
+}
+
+.credits p {
+    margin: 0;
+    padding: 0;
+}
+
+.credits-author {
+    font-size: 0.65em;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 2px;
+    line-height: 1.2;
+}
+
+.credits-school {
+    font-size: 0.6em;
+    font-weight: 500;
+    color: #666;
+    line-height: 1.2;
+    margin-bottom: 2px;
+}
+
+.credits-email {
+    font-size: 0.55em;
+    font-weight: 400;
+    color: #888;
+    line-height: 1.2;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal.show {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: 15px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.modal-content h2 {
+    font-family: 'Poppins', 'Inter', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #333;
+}
+
+.modal-content p {
+    font-size: 0.95em;
+    line-height: 1.6;
+}
+
+.close {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #000;
+}
+
+#rankingContent {
+    margin-top: 20px;
+}
+
+.ranking-section {
+    margin-bottom: 20px;
+}
+
+.ranking-section h3 {
+    font-family: 'Poppins', 'Inter', sans-serif;
+    color: #667eea;
+    margin-bottom: 10px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+}
+
+.ranking-section ol {
+    list-style-position: inside;
+    line-height: 2;
+    font-size: 0.95em;
+}
+
+#winnerName {
+    font-family: 'Inter', sans-serif;
+    width: 100%;
+    padding: 10px;
+    margin: 20px 0;
+    border: 2px solid #667eea;
+    border-radius: 5px;
+    font-size: 1em;
+}
+
+#submitName {
+    width: 100%;
+}
+
+/* PDF Modal Styles */
+.pdf-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.pdf-options label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1em;
+}
+
+.pdf-options label:hover {
+    border-color: #667eea;
+    background-color: #f8f9ff;
+}
+
+.pdf-options input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.pdf-options input[type="radio"]:checked + label,
+.pdf-options label:has(input[type="radio"]:checked) {
+    border-color: #667eea;
+    background-color: #f0f3ff;
+    font-weight: 600;
+}
+
+#confirmPdfBtn {
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
+    .game-container {
+        flex-direction: column;
+    }
+
+    .left-panel,
+    .middle-panel,
+    .right-panel {
+        flex: 1;
+        width: 100%;
+    }
+
+    .middle-panel,
+    .right-panel {
+        flex: 0 0 auto;
+    }
+    
+    #gameCanvas {
+        max-width: 100%;
+        height: auto;
+    }
+    
+    .controls-top {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    
+    .edit-controls {
+        grid-column: 1 / -1;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    header h1 {
+        font-size: 1.8em;
+    }
+    
+    .header-images {
+        gap: 10px;
+    }
+    
+    .header-image,
+    .teacher-image {
+        max-height: 100px;
+    }
+    
+    .game-container {
+        padding: 10px;
+    }
+    
+    .controls-top {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Animaciones */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.btn-success:not(:disabled) {
+    animation: pulse 2s infinite;
+}
+
+/* Sistema de hojas decorativas alrededor del game-container */
+.leaves-border-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 50;
+    overflow: visible;
+}
+
+.leaf {
+    position: absolute;
+    width: 85px;
+    height: 85px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    pointer-events: none;
+    opacity: 0;
+    animation: leafFadeIn 0.8s ease-out forwards;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.25));
+    transition: all 0.3s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.leaf-top {
+    transform-origin: center bottom;
+}
+
+.leaf-bottom {
+    transform-origin: center top;
+}
+
+.leaf-left {
+    transform-origin: right center;
+}
+
+.leaf-right {
+    transform-origin: left center;
+}
+
+@keyframes leafFadeIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3) rotate(0deg);
+    }
+    60% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.95;
+    }
+}
+
+/* Animación sutil de balanceo para las hojas al pasar el mouse */
+.leaf:hover {
+    opacity: 1 !important;
+    filter: drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.35));
+    transform: rotate(var(--leaf-rotation, 0deg)) scale(calc(var(--leaf-scale, 1) * 1.15)) !important;
+    z-index: 20;
+}
