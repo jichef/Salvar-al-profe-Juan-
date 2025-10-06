@@ -3,7 +3,7 @@ class LeavesBorder {
     constructor(containerSelector) {
         this.container = document.querySelector(containerSelector);
         this.leavesWrapper = null;
-        this.leafImages = ['hoja1.png', 'hoja2.png', 'hoja3.png', 'hoja4.png', 'hoja5.png', 'hoja6.png', 'hoja7.png'];
+        this.leafImages = ['assets/hoja1.png', 'assets/hoja2.png', 'assets/hoja3.png', 'assets/hoja4.png', 'assets/hoja5.png', 'assets/hoja6.png', 'assets/hoja7.png'];
         this.leafSize = 18; // Tamaño base de cada hoja en píxeles (espaciado muy denso - franja estrecha)
         this.exclusionZones = []; // Zonas donde no se deben generar hojas
         this.init();
@@ -201,4 +201,5 @@ let leavesBorderInstance = null;
 // Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
     leavesBorderInstance = new LeavesBorder('.game-container');
+
 });
