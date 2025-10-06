@@ -142,6 +142,78 @@ header h1 {
     height: 12px;
 }
 
+/* Efecto glow para el audio toggle cuando necesita atención */
+.audio-toggle.needs-interaction {
+    animation: audioGlowPulse 2s ease-in-out infinite;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: rgba(102, 126, 234, 0.1);
+    position: relative;
+    cursor: pointer;
+}
+
+@keyframes audioGlowPulse {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(102, 126, 234, 0.3),
+                    0 0 10px rgba(102, 126, 234, 0.2),
+                    0 0 15px rgba(102, 126, 234, 0.1);
+        background: rgba(102, 126, 234, 0.1);
+    }
+    50% {
+        box-shadow: 0 0 10px rgba(102, 126, 234, 0.6),
+                    0 0 20px rgba(102, 126, 234, 0.4),
+                    0 0 30px rgba(102, 126, 234, 0.2);
+        background: rgba(102, 126, 234, 0.2);
+    }
+}
+
+.audio-toggle.needs-interaction label {
+    color: #667eea;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* Tooltip para indicar que se necesita interacción */
+.audio-toggle.needs-interaction::after {
+    content: '👆 Haz clic aquí para activar el audio';
+    position: absolute;
+    top: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #667eea;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.75em;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    animation: tooltipBounce 2s ease-in-out infinite;
+}
+
+.audio-toggle.needs-interaction::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid #667eea;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+@keyframes tooltipBounce {
+    0%, 100% {
+        transform: translateX(-50%) translateY(0);
+    }
+    50% {
+        transform: translateX(-50%) translateY(-3px);
+    }
+}
+
 .difficulty-selector select,
 .character-selector select {
     padding: 2px 6px;
@@ -825,5 +897,4 @@ header h1 {
     filter: drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.35));
     transform: rotate(var(--leaf-rotation, 0deg)) scale(calc(var(--leaf-scale, 1) * 1.15)) !important;
     z-index: 20;
-
 }
