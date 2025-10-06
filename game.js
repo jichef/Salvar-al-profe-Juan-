@@ -365,13 +365,12 @@ function isTouchDevice() {
 function setupMobileLayout() {
     if (isTouchDevice()) {
         const movementButtons = document.querySelector('.movement-buttons');
-        const leftPanel = document.querySelector('.left-panel');
-        const canvas = document.getElementById('gameCanvas');
+        const editControls = document.querySelector('.edit-controls');
         
-        if (movementButtons && leftPanel && canvas) {
-            // Insertar los botones de movimiento antes del canvas
-            leftPanel.insertBefore(movementButtons, canvas);
-            console.log('✓ Botones de movimiento movidos al toolbar (iOS/Touch)');
+        if (movementButtons && editControls) {
+            // Insertar los botones de movimiento dentro de edit-controls (al lado del botón PDF)
+            editControls.appendChild(movementButtons);
+            console.log('✓ Botones de movimiento movidos al lado del botón PDF (iOS/Touch)');
         }
     }
 }
