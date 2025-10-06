@@ -122,39 +122,15 @@ function unlockAudio() {
     
     console.log('🔐 Intentando desbloquear audio...');
     
-    // En iOS, solo necesitamos cargar los audios sin reproducirlos
-    // El navegador los desbloqueará automáticamente con la interacción
-    const unlockPromises = Object.values(audioElements).map(audio => {
-        if (audio) {
-            // Solo cargar el audio sin reproducir
-            audio.load();
-            // En iOS, intentar reproducir con volumen 0 y pausar inmediatamente
-            const originalVolume = audio.volume;
-            audio.volume = 0;
-            return audio.play().then(() => {
-                audio.pause();
-                audio.currentTime = 0;
-                audio.volume = originalVolume;
-                console.log('✓ Audio desbloqueado:', audio.id);
-            }).catch((e) => {
-                // Restaurar volumen incluso si falla
-                audio.volume = originalVolume;
-                console.log('⚠️ Error al desbloquear audio:', audio.id, e.message);
-            });
-        }
-        return Promise.resolve();
-    });
+    // Simplemente marcar como desbloqueado después de la primera interacción
+    // Los archivos se cargarán cuando se reproduzcan por primera vez
+    audioUnlocked = true;
+    console.log('✅ Audio desbloqueado - Los archivos se cargarán cuando se reproduzcan');
     
-    // Marcar como desbloqueado después de intentar con todos los audios
-    Promise.all(unlockPromises).then(() => {
-        audioUnlocked = true;
-        console.log('✅ Audio desbloqueado y listo para reproducir');
-        
-        // Quitar el efecto glow del audio toggle
-        if (audioToggleDiv) {
-            audioToggleDiv.classList.remove('needs-interaction');
-        }
-    });
+    // Quitar el efecto glow del audio toggle
+    if (audioToggleDiv) {
+        audioToggleDiv.classList.remove('needs-interaction');
+    }
 }
 
 // Función para activar el efecto glow en el audio toggle
@@ -189,6 +165,12 @@ function playSound(type) {
             // Establecer nueva música
             currentMusic = audioElements[type];
             if (currentMusic) {
+                // Cargar el audio si no está cargado (lazy loading)
+                if (currentMusic.readyState === 0) {
+                    console.log('📥 Cargando audio:', type);
+                    currentMusic.load();
+                }
+                
                 currentMusic.currentTime = 0;
                 console.log('▶️ Reproduciendo nueva música:', type);
                 // En iOS, usar una promesa para asegurar que se reproduce
@@ -198,7 +180,21 @@ function playSound(type) {
                         .then(() => console.log('✅ Música reproducida:', type))
                         .catch(e => {
                             console.log('🔇 Audio play prevented:', e.message);
-                            currentMusic = null;
+                            // Si falla, intentar cargar y reproducir de nuevo
+                            if (e.name === 'NotSupportedError' || e.name === 'NotAllowedError') {
+                                console.log('🔄 Reintentando con carga explícita...');
+                                currentMusic.load();
+                                setTimeout(() => {
+                                    currentMusic.play()
+                                        .then(() => console.log('✅ Música reproducida en segundo intento'))
+                                        .catch(e2 => {
+                                            console.log('🔇 Segundo intento fallido:', e2.message);
+                                            currentMusic = null;
+                                        });
+                                }, 100);
+                            } else {
+                                currentMusic = null;
+                            }
                         });
                 }
             }
@@ -207,6 +203,13 @@ function playSound(type) {
             const audio = audioElements[type];
             if (audio) {
                 console.log('🔊 Elemento de audio encontrado:', type, audio);
+                
+                // Cargar el audio si no está cargado (lazy loading)
+                if (audio.readyState === 0) {
+                    console.log('📥 Cargando audio:', type);
+                    audio.load();
+                }
+                
                 audio.currentTime = 0;
                 const playPromise = audio.play();
                 if (playPromise !== undefined) {
@@ -214,6 +217,16 @@ function playSound(type) {
                         .then(() => console.log('✅ Efecto de sonido reproducido:', type))
                         .catch(e => {
                             console.log('🔇 Audio play prevented:', e.message);
+                            // Si falla, intentar cargar y reproducir de nuevo
+                            if (e.name === 'NotSupportedError' || e.name === 'NotAllowedError') {
+                                console.log('🔄 Reintentando con carga explícita...');
+                                audio.load();
+                                setTimeout(() => {
+                                    audio.play()
+                                        .then(() => console.log('✅ Efecto reproducido en segundo intento'))
+                                        .catch(e2 => console.log('🔇 Segundo intento fallido:', e2.message));
+                                }, 100);
+                            }
                         });
                 }
             } else {
