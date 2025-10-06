@@ -75,11 +75,21 @@ let currentMusic = null;
 let audioUnlocked = false; // Flag para saber si el audio ha sido desbloqueado
 
 function initAudio() {
+    console.log('🎵 Inicializando elementos de audio...');
+    
     audioElements.suspense = document.getElementById('suspenseAudio');
     audioElements.adventure = document.getElementById('adventureAudio');
     audioElements.error = document.getElementById('errorAudio');
     audioElements.fanfare = document.getElementById('fanfareAudio');
     audioElements.jump = document.getElementById('jumpAudio');
+    
+    console.log('🎵 Elementos de audio encontrados:', {
+        suspense: !!audioElements.suspense,
+        adventure: !!audioElements.adventure,
+        error: !!audioElements.error,
+        fanfare: !!audioElements.fanfare,
+        jump: !!audioElements.jump
+    });
     
     // Configurar volumen
     if (audioElements.suspense) audioElements.suspense.volume = 0.5;
@@ -99,11 +109,18 @@ function initAudio() {
             }
         });
     }
+    
+    console.log('✅ Audio inicializado correctamente');
 }
 
 // Función para desbloquear el audio con la primera interacción del usuario
 function unlockAudio() {
-    if (audioUnlocked) return;
+    if (audioUnlocked) {
+        console.log('🔓 Audio ya desbloqueado');
+        return;
+    }
+    
+    console.log('🔐 Intentando desbloquear audio...');
     
     // En iOS, solo necesitamos cargar los audios sin reproducirlos
     // El navegador los desbloqueará automáticamente con la interacción
@@ -118,9 +135,11 @@ function unlockAudio() {
                 audio.pause();
                 audio.currentTime = 0;
                 audio.volume = originalVolume;
-            }).catch(() => {
+                console.log('✓ Audio desbloqueado:', audio.id);
+            }).catch((e) => {
                 // Restaurar volumen incluso si falla
                 audio.volume = originalVolume;
+                console.log('⚠️ Error al desbloquear audio:', audio.id, e.message);
             });
         }
         return Promise.resolve();
@@ -129,7 +148,7 @@ function unlockAudio() {
     // Marcar como desbloqueado después de intentar con todos los audios
     Promise.all(unlockPromises).then(() => {
         audioUnlocked = true;
-        console.log('✓ Audio desbloqueado y listo para reproducir');
+        console.log('✅ Audio desbloqueado y listo para reproducir');
         
         // Quitar el efecto glow del audio toggle
         if (audioToggleDiv) {
