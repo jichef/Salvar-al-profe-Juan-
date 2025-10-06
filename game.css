@@ -820,7 +820,29 @@ header h1 {
 
 /* Optimizaciones para dispositivos móviles/táctiles */
 @media (hover: none) and (pointer: coarse) {
-    /* Reorganizar el panel izquierdo para mostrar canvas y controles lado a lado */
+    /* Reorganizar el contenedor principal usando CSS Grid */
+    .game-container {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-rows: auto auto auto;
+        gap: 15px;
+    }
+    
+    /* Panel izquierdo: Fila 1, columnas 1-2 (controles) + Fila 2, columna 1 (canvas) */
+    .left-panel {
+        grid-column: 1 / -1;
+        grid-row: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    /* Canvas ocupa solo la primera columna en la segunda fila */
+    #gameCanvas {
+        max-width: calc(100vw - 200px);
+    }
+    
+    /* Crear un wrapper para canvas y botones */
     .left-panel {
         display: grid;
         grid-template-columns: 1fr auto;
@@ -828,21 +850,32 @@ header h1 {
         gap: 10px;
     }
     
-    /* Controles superiores ocupan toda la fila */
     .controls-top {
         grid-column: 1 / -1;
         grid-row: 1;
     }
     
-    /* Canvas en la columna izquierda */
     #gameCanvas {
         grid-column: 1;
         grid-row: 2;
-        max-width: 100%;
     }
     
-    /* Crear un contenedor para los controles de movimiento al lado del canvas */
-    .mobile-controls-wrapper {
+    /* Panel derecho: Mover solo los botones de movimiento al lado del canvas */
+    .right-panel {
+        grid-column: 1 / -1;
+        grid-row: 3;
+        display: contents; /* Esto permite que los hijos se coloquen en el grid padre */
+    }
+    
+    /* Las instrucciones van en la fila 3 */
+    .right-panel .instructions {
+        grid-column: 1 / -1;
+        grid-row: 3;
+        order: 2;
+    }
+    
+    /* Los botones de movimiento van al lado del canvas (columna 2, fila 2) */
+    .right-panel .movement-buttons {
         grid-column: 2;
         grid-row: 2;
         display: flex;
@@ -851,11 +884,23 @@ header h1 {
         align-items: center;
         gap: 8px;
         padding: 0 10px;
+        margin: 0;
     }
     
-    /* Mover los controles del panel derecho al lado del canvas en móviles */
-    .right-panel .movement-buttons {
-        display: none; /* Ocultar en su posición original */
+    /* Ocultar el título "Movimientos" en móvil */
+    .right-panel .movement-buttons h3 {
+        display: none;
+    }
+    
+    /* Ocultar los créditos en móvil */
+    .right-panel .movement-buttons .credits {
+        display: none;
+    }
+    
+    /* Panel central: Secuencia de movimientos al final (fila 4) */
+    .middle-panel {
+        grid-column: 1 / -1;
+        grid-row: 4;
     }
     
     /* Los botones de flecha serán más pequeños en móvil */
@@ -866,18 +911,13 @@ header h1 {
     }
     
     .btn-spacebar {
-        width: 128px; /* Ajustado al nuevo tamaño de flechas */
+        width: 128px;
         height: 40px;
         font-size: 0.9em;
     }
     
     .arrow-row:first-child {
-        width: 128px; /* Ajustado al nuevo ancho */
-    }
-    
-    /* Reducir el tamaño del canvas en móviles si es necesario */
-    #gameCanvas {
-        max-width: calc(100vw - 180px); /* Dejar espacio para los controles */
+        width: 128px;
     }
 }
 
