@@ -67,7 +67,7 @@ El salto te permite pasar sobre una trampa o muro, avanzando 2 casillas en la ú
 3. El jugador saltará 2 casillas a la derecha
 
 <div align="left">
-  <img src="hoja4.png" width="50">
+  <img src="assets/hoja4.png" width="50">
 </div>
 
 ## ✏️ Editor de laberintos
@@ -79,7 +79,7 @@ El salto te permite pasar sobre una trampa o muro, avanzando 2 casillas en la ú
 5. Usa `📂 Cargar` para importar un laberinto guardado
 
 <div align="right">
-  <img src="hoja6.png" width="50">
+  <img src="assets/hoja6.png" width="50">
 </div>
 
 ## 🏆 Sistema de ranking
