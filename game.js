@@ -28,6 +28,7 @@ const customCharacterInput = document.getElementById('customCharacter');
 const uploadCharacterBtn = document.getElementById('uploadCharacterBtn');
 const keyboardCheckbox = document.getElementById('keyboardEnabled');
 const audioCheckbox = document.getElementById('audioEnabled');
+const audioToggleDiv = document.querySelector('.audio-toggle');
 
 // Botones
 const upBtn = document.getElementById('upBtn');
@@ -101,7 +102,19 @@ function unlockAudio() {
     Promise.all(unlockPromises).then(() => {
         audioUnlocked = true;
         console.log('✓ Audio desbloqueado y listo para reproducir');
+        
+        // Quitar el efecto glow del audio toggle
+        if (audioToggleDiv) {
+            audioToggleDiv.classList.remove('needs-interaction');
+        }
     });
+}
+
+// Función para activar el efecto glow en el audio toggle
+function showAudioNeedsInteraction() {
+    if (!audioUnlocked && audioToggleDiv && audioEnabled) {
+        audioToggleDiv.classList.add('needs-interaction');
+    }
 }
 
 function playSound(type) {
@@ -289,6 +302,11 @@ function init() {
     // Inicializar audio
     initAudio();
     
+    // Mostrar el efecto glow después de 2 segundos si el audio no está desbloqueado
+    setTimeout(() => {
+        showAudioNeedsInteraction();
+    }, 2000);
+    
     // Desbloquear audio con la primera interacción del usuario
     const unlockAudioOnInteraction = () => {
         unlockAudio();
@@ -364,8 +382,16 @@ function init() {
         audioEnabled = audioCheckbox.checked;
         if (!audioEnabled) {
             stopMusic();
+            // Quitar el glow si se desactiva el audio
+            if (audioToggleDiv) {
+                audioToggleDiv.classList.remove('needs-interaction');
+            }
         } else {
             playSound('suspense');
+            // Mostrar glow si el audio no está desbloqueado
+            if (!audioUnlocked) {
+                showAudioNeedsInteraction();
+            }
         }
     });
 
