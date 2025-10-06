@@ -1,12 +1,12 @@
 <div align="center">
-  <img src="cabecera.png" alt="Saving Teacher Juan" width="100%">
+  <img src="assets/cabecera.png" alt="Saving Teacher Juan" width="100%">
 </div>
 
 <div align="center">
-  <img src="hoja1.png" width="60" style="display: inline-block; margin: 0 10px;">
-  <img src="hoja3.png" width="60" style="display: inline-block; margin: 0 10px;">
-  <img src="hoja5.png" width="60" style="display: inline-block; margin: 0 10px;">
-  <img src="hoja7.png" width="60" style="display: inline-block; margin: 0 10px;">
+  <img src="assets/hoja1.png" width="60" style="display: inline-block; margin: 0 10px;">
+  <img src="assets/hoja3.png" width="60" style="display: inline-block; margin: 0 10px;">
+  <img src="assets/hoja5.png" width="60" style="display: inline-block; margin: 0 10px;">
+  <img src="assets/hoja7.png" width="60" style="display: inline-block; margin: 0 10px;">
 </div>
 
 # 🎮 Saving Teacher Juan - Versión Web
@@ -31,7 +31,7 @@ Esta es la versión web del juego "Saving Teacher Juan", convertida desde la ver
 ## 🎯 Cómo jugar
 
 <div align="center">
-  <img src="teacher.png" alt="Teacher Juan" width="150">
+  <img src="assets/teacher.png" alt="Teacher Juan" width="150">
 </div>
 
 ### Objetivo
@@ -156,13 +156,13 @@ Si encuentras algún bug o tienes sugerencias de mejora, no dudes en reportarlo.
 ---
 
 <div align="center">
-  <img src="hoja1.png" width="50" style="display: inline-block; margin: 0 5px;">
-  <img src="hoja2.png" width="50" style="display: inline-block; margin: 0 5px;">
-  <img src="hoja3.png" width="50" style="display: inline-block; margin: 0 5px;">
-  <img src="hoja4.png" width="50" style="display: inline-block; margin: 0 5px;">
-  <img src="hoja5.png" width="50" style="display: inline-block; margin: 0 5px;">
-  <img src="hoja6.png" width="50" style="display: inline-block; margin: 0 5px;">
-  <img src="hoja7.png" width="50" style="display: inline-block; margin: 0 5px;">
+  <img src="assets/hoja1.png" width="50" style="display: inline-block; margin: 0 5px;">
+  <img src="assets/hoja2.png" width="50" style="display: inline-block; margin: 0 5px;">
+  <img src="assets/hoja3.png" width="50" style="display: inline-block; margin: 0 5px;">
+  <img src="assets/hoja4.png" width="50" style="display: inline-block; margin: 0 5px;">
+  <img src="assets/hoja5.png" width="50" style="display: inline-block; margin: 0 5px;">
+  <img src="assets/hoja6.png" width="50" style="display: inline-block; margin: 0 5px;">
+  <img src="assets/hoja7.png" width="50" style="display: inline-block; margin: 0 5px;">
 </div>
 
-**¡Diviértete rescatando al profesor Juan! 🎉**
+**¡Diviértete rescatando al profe Juan! 🎉**
