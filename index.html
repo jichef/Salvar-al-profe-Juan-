@@ -53,7 +53,7 @@
                     </div>
                     <div class="audio-toggle">
                         <label>
-                            <input type="checkbox" id="audioEnabled" checked>
+                            <input type="checkbox" id="audioEnabled">
                             🔊 Sonido
                         </label>
                     </div>
@@ -66,6 +66,23 @@
                 </div>
 
                 <canvas id="gameCanvas"></canvas>
+                
+                <!-- Teclas de movimiento (solo visible en móviles) -->
+                <div class="movement-buttons-mobile">
+                    <div class="keyboard-layout">
+                        <div class="arrow-keys">
+                            <div class="arrow-row">
+                                <button id="upBtnMobile" class="btn btn-arrow">⬆️</button>
+                            </div>
+                            <div class="arrow-row">
+                                <button id="leftBtnMobile" class="btn btn-arrow">⬅️</button>
+                                <button id="downBtnMobile" class="btn btn-arrow">⬇️</button>
+                                <button id="rightBtnMobile" class="btn btn-arrow">➡️</button>
+                            </div>
+                        </div>
+                        <button id="jumpBtnMobile" class="btn btn-spacebar">⏭️ Salto</button>
+                    </div>
+                </div>
             </div>
 
             <!-- Panel central: Secuencia de movimientos -->
@@ -164,6 +181,11 @@
             </p>
             <button id="confirmPdfBtn" class="btn btn-success">Generar PDF</button>
         </div>
+    </div>
+
+    <!-- Mensaje de activación de audio -->
+    <div id="audioActivationMessage" class="audio-activation-message">
+        🔊 Haz clic aquí para activar el audio
     </div>
 
     <!-- Audio elements -->

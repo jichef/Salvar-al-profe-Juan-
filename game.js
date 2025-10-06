@@ -1825,8 +1825,8 @@ async function generatePDF(difficulty) {
         document.body.appendChild(loadingMsg);
         
         // Cargar imágenes de cabecera y emoji
-        const cabeceraImg = await loadImageAsBase64('cabecera.png');
-        const teacherImg = await loadImageAsBase64('teacher.png');
+        const cabeceraImg = await loadImageAsBase64('assets/cabecera.png');
+        const teacherImg = await loadImageAsBase64('assets/teacher.png');
         const targetEmoji = emojiToBase64('🎯', 128); // Emoji de meta como imagen
         
         // Crear instancia de jsPDF
