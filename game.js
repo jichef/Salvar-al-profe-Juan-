@@ -14,7 +14,7 @@ let timeElapsed = 0;
 let timerInterval = null;
 let editMode = false;
 let keyboardEnabled = true;
-let audioEnabled = true;
+let audioEnabled = false;
 let lastCanvasSize = { width: 0, height: 0 }; // Para detectar cambios de tamaño
 
 // Detectar iOS para optimizaciones de rendimiento
@@ -36,6 +36,7 @@ const uploadCharacterBtn = document.getElementById('uploadCharacterBtn');
 const keyboardCheckbox = document.getElementById('keyboardEnabled');
 const audioCheckbox = document.getElementById('audioEnabled');
 const audioToggleDiv = document.querySelector('.audio-toggle');
+const audioActivationMessage = document.getElementById('audioActivationMessage');
 
 // Botones
 const upBtn = document.getElementById('upBtn');
@@ -86,6 +87,18 @@ function initAudio() {
     if (audioElements.error) audioElements.error.volume = 0.7;
     if (audioElements.fanfare) audioElements.fanfare.volume = 0.8;
     if (audioElements.jump) audioElements.jump.volume = 0.6;
+    
+    // Agregar event listener para loop de música suspense
+    if (audioElements.suspense) {
+        audioElements.suspense.addEventListener('ended', () => {
+            if (audioEnabled && currentMusic === audioElements.suspense) {
+                audioElements.suspense.currentTime = 0;
+                audioElements.suspense.play().catch(e => {
+                    console.log('🔇 Error al reiniciar música suspense:', e.message);
+                });
+            }
+        });
+    }
 }
 
 // Función para desbloquear el audio con la primera interacción del usuario
@@ -339,6 +352,19 @@ function init() {
     
     // Inicializar audio
     initAudio();
+    
+    // Mostrar mensaje de activación de audio
+    if (audioActivationMessage) {
+        audioActivationMessage.style.display = 'flex';
+        audioActivationMessage.addEventListener('click', () => {
+            audioEnabled = true;
+            audioCheckbox.checked = true;
+            audioActivationMessage.style.display = 'none';
+            unlockAudio();
+            playSound('suspense');
+            console.log('✓ Audio activado por el usuario');
+        });
+    }
     
     // Mostrar el efecto glow después de 2 segundos si el audio no está desbloqueado
     setTimeout(() => {
