@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
-    background-image: url('fondo.jpg');
+    background-image: url('assets/fondo.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -825,4 +825,5 @@ header h1 {
     filter: drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.35));
     transform: rotate(var(--leaf-rotation, 0deg)) scale(calc(var(--leaf-scale, 1) * 1.15)) !important;
     z-index: 20;
+
 }
