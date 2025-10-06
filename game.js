@@ -63,6 +63,7 @@ const audioElements = {
 };
 
 let currentMusic = null;
+let audioUnlocked = false; // Flag para saber si el audio ha sido desbloqueado
 
 function initAudio() {
     audioElements.suspense = document.getElementById('suspenseAudio');
@@ -79,8 +80,33 @@ function initAudio() {
     if (audioElements.jump) audioElements.jump.volume = 0.6;
 }
 
+// Función para desbloquear el audio con la primera interacción del usuario
+function unlockAudio() {
+    if (audioUnlocked) return;
+    
+    // Intentar reproducir y pausar inmediatamente cada audio para desbloquearlo
+    const unlockPromises = Object.values(audioElements).map(audio => {
+        if (audio) {
+            return audio.play().then(() => {
+                audio.pause();
+                audio.currentTime = 0;
+            }).catch(() => {
+                // Silenciosamente ignorar errores de desbloqueo
+            });
+        }
+        return Promise.resolve();
+    });
+    
+    // Marcar como desbloqueado después de intentar con todos los audios
+    Promise.all(unlockPromises).then(() => {
+        audioUnlocked = true;
+        console.log('✓ Audio desbloqueado y listo para reproducir');
+    });
+}
+
 function playSound(type) {
     if (!audioEnabled) return;
+    if (!audioUnlocked) return; // No intentar reproducir si el audio no está desbloqueado
     
     try {
         if (type === 'suspense' || type === 'adventure') {
@@ -88,17 +114,21 @@ function playSound(type) {
             currentMusic = audioElements[type];
             if (currentMusic) {
                 currentMusic.currentTime = 0;
-                currentMusic.play().catch(e => console.log('Audio play prevented:', e));
+                currentMusic.play().catch(e => {
+                    // Silenciosamente ignorar errores de reproducción
+                });
             }
         } else {
             const audio = audioElements[type];
             if (audio) {
                 audio.currentTime = 0;
-                audio.play().catch(e => console.log('Audio play prevented:', e));
+                audio.play().catch(e => {
+                    // Silenciosamente ignorar errores de reproducción
+                });
             }
         }
     } catch (e) {
-        console.log('Error playing sound:', e);
+        // Silenciosamente ignorar errores
     }
 }
 
@@ -258,6 +288,19 @@ function loadTextures() {
 function init() {
     // Inicializar audio
     initAudio();
+    
+    // Desbloquear audio con la primera interacción del usuario
+    const unlockAudioOnInteraction = () => {
+        unlockAudio();
+        // Remover los listeners después de la primera interacción
+        document.removeEventListener('click', unlockAudioOnInteraction);
+        document.removeEventListener('keydown', unlockAudioOnInteraction);
+        document.removeEventListener('touchstart', unlockAudioOnInteraction);
+    };
+    
+    document.addEventListener('click', unlockAudioOnInteraction);
+    document.addEventListener('keydown', unlockAudioOnInteraction);
+    document.addEventListener('touchstart', unlockAudioOnInteraction);
     
     difficultySelect.addEventListener('change', () => {
         GRID_SIZE = parseInt(difficultySelect.value);
@@ -1579,8 +1622,8 @@ async function generatePDF(difficulty) {
         document.body.appendChild(loadingMsg);
         
         // Cargar imágenes de cabecera y emoji
-        const cabeceraImg = await loadImageAsBase64('assets/cabecera.png');
-        const teacherImg = await loadImageAsBase64('assets/teacher.png');
+        const cabeceraImg = await loadImageAsBase64('cabecera.png');
+        const teacherImg = await loadImageAsBase64('teacher.png');
         const targetEmoji = emojiToBase64('🎯', 128); // Emoji de meta como imagen
         
         // Crear instancia de jsPDF
@@ -1948,5 +1991,4 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {
     init();
-
 }
