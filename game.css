@@ -818,6 +818,69 @@ header h1 {
     }
 }
 
+/* Optimizaciones para dispositivos móviles/táctiles */
+@media (hover: none) and (pointer: coarse) {
+    /* Reorganizar el panel izquierdo para mostrar canvas y controles lado a lado */
+    .left-panel {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-rows: auto 1fr;
+        gap: 10px;
+    }
+    
+    /* Controles superiores ocupan toda la fila */
+    .controls-top {
+        grid-column: 1 / -1;
+        grid-row: 1;
+    }
+    
+    /* Canvas en la columna izquierda */
+    #gameCanvas {
+        grid-column: 1;
+        grid-row: 2;
+        max-width: 100%;
+    }
+    
+    /* Crear un contenedor para los controles de movimiento al lado del canvas */
+    .mobile-controls-wrapper {
+        grid-column: 2;
+        grid-row: 2;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        padding: 0 10px;
+    }
+    
+    /* Mover los controles del panel derecho al lado del canvas en móviles */
+    .right-panel .movement-buttons {
+        display: none; /* Ocultar en su posición original */
+    }
+    
+    /* Los botones de flecha serán más pequeños en móvil */
+    .btn-arrow {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2em;
+    }
+    
+    .btn-spacebar {
+        width: 128px; /* Ajustado al nuevo tamaño de flechas */
+        height: 40px;
+        font-size: 0.9em;
+    }
+    
+    .arrow-row:first-child {
+        width: 128px; /* Ajustado al nuevo ancho */
+    }
+    
+    /* Reducir el tamaño del canvas en móviles si es necesario */
+    #gameCanvas {
+        max-width: calc(100vw - 180px); /* Dejar espacio para los controles */
+    }
+}
+
 /* Animaciones */
 @keyframes pulse {
     0%, 100% {

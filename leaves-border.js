@@ -33,13 +33,18 @@ class LeavesBorder {
         this.generateLeaves();
 
         // Regenerar hojas cuando cambie el tamaño de la ventana
-        let resizeTimeout;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {
-                this.regenerateLeaves();
-            }, 250);
-        });
+        // SOLO en dispositivos NO móviles (mejor rendimiento en móviles)
+        if (!this.isMobile()) {
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    this.regenerateLeaves();
+                }, 250);
+            });
+        } else {
+            console.log('📱 Dispositivo móvil detectado - Hojas fijas (sin regeneración)');
+        }
     }
 
     generateLeaves() {
@@ -172,6 +177,12 @@ class LeavesBorder {
 
     regenerateLeaves() {
         this.generateLeaves();
+    }
+
+    // Detectar si es un dispositivo móvil (táctil)
+    isMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+               (navigator.maxTouchPoints && navigator.maxTouchPoints > 1);
     }
 
     // Actualizar las zonas de exclusión basadas en elementos del DOM

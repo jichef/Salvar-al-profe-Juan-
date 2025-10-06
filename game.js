@@ -304,8 +304,72 @@ function loadTextures() {
     });
 }
 
+// Configurar controles para dispositivos móviles
+function setupMobileControls() {
+    // Buscar el panel izquierdo y los controles de movimiento
+    const leftPanel = document.querySelector('.left-panel');
+    const movementButtons = document.querySelector('.movement-buttons');
+    
+    if (!leftPanel || !movementButtons) {
+        console.warn('No se pudieron encontrar los elementos para reorganizar');
+        return;
+    }
+    
+    // Crear contenedor para los controles móviles
+    const mobileControlsWrapper = document.createElement('div');
+    mobileControlsWrapper.className = 'mobile-controls-wrapper';
+    
+    // Clonar los controles de movimiento (teclado)
+    const keyboardLayout = movementButtons.querySelector('.keyboard-layout');
+    if (keyboardLayout) {
+        const clonedKeyboard = keyboardLayout.cloneNode(true);
+        mobileControlsWrapper.appendChild(clonedKeyboard);
+        
+        // Agregar el contenedor al panel izquierdo
+        leftPanel.appendChild(mobileControlsWrapper);
+        
+        // Reconectar los event listeners a los botones clonados
+        reconnectMobileButtons(mobileControlsWrapper);
+    }
+}
+
+// Reconectar event listeners a los botones clonados en móvil
+function reconnectMobileButtons(container) {
+    const mobileUpBtn = container.querySelector('#upBtn');
+    const mobileDownBtn = container.querySelector('#downBtn');
+    const mobileLeftBtn = container.querySelector('#leftBtn');
+    const mobileRightBtn = container.querySelector('#rightBtn');
+    const mobileJumpBtn = container.querySelector('#jumpBtn');
+    
+    // Remover IDs duplicados y agregar event listeners
+    if (mobileUpBtn) {
+        mobileUpBtn.removeAttribute('id');
+        mobileUpBtn.addEventListener('click', () => addMovement('up'));
+    }
+    if (mobileDownBtn) {
+        mobileDownBtn.removeAttribute('id');
+        mobileDownBtn.addEventListener('click', () => addMovement('down'));
+    }
+    if (mobileLeftBtn) {
+        mobileLeftBtn.removeAttribute('id');
+        mobileLeftBtn.addEventListener('click', () => addMovement('left'));
+    }
+    if (mobileRightBtn) {
+        mobileRightBtn.removeAttribute('id');
+        mobileRightBtn.addEventListener('click', () => addMovement('right'));
+    }
+    if (mobileJumpBtn) {
+        mobileJumpBtn.removeAttribute('id');
+        mobileJumpBtn.addEventListener('click', () => addMovement('jump'));
+    }
+}
+
 // Inicialización
 function init() {
+    // Detectar dispositivo móvil
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                     (navigator.maxTouchPoints && navigator.maxTouchPoints > 1);
+    
     // Mostrar mensaje si es iOS
     if (isIOS) {
         console.log('🍎 iOS/iPhone detectado - Optimizaciones de rendimiento activadas');
@@ -313,6 +377,12 @@ function init() {
         console.log('   • Animaciones simplificadas');
         console.log('   • Scroll instantáneo activado');
         console.log('   • Drop-shadows desactivados');
+    }
+    
+    // Reorganizar controles en dispositivos móviles
+    if (isMobile) {
+        setupMobileControls();
+        console.log('📱 Dispositivo móvil detectado - Controles reorganizados al lado del canvas');
     }
     
     // Inicializar audio
