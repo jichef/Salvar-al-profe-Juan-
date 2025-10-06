@@ -25,7 +25,7 @@ Esta es la versión web del juego "Saving Teacher Juan", convertida desde la ver
 - ✅ Control por teclado y botones
 
 <div align="right">
-  <img src="hoja2.png" width="50">
+  <img src="assets/hoja2.png" width="50">
 </div>
 
 ## 🎯 Cómo jugar
