@@ -92,14 +92,22 @@ function initAudio() {
 function unlockAudio() {
     if (audioUnlocked) return;
     
-    // Intentar reproducir y pausar inmediatamente cada audio para desbloquearlo
+    // En iOS, solo necesitamos cargar los audios sin reproducirlos
+    // El navegador los desbloqueará automáticamente con la interacción
     const unlockPromises = Object.values(audioElements).map(audio => {
         if (audio) {
+            // Solo cargar el audio sin reproducir
+            audio.load();
+            // En iOS, intentar reproducir con volumen 0 y pausar inmediatamente
+            const originalVolume = audio.volume;
+            audio.volume = 0;
             return audio.play().then(() => {
                 audio.pause();
                 audio.currentTime = 0;
+                audio.volume = originalVolume;
             }).catch(() => {
-                // Silenciosamente ignorar errores de desbloqueo
+                // Restaurar volumen incluso si falla
+                audio.volume = originalVolume;
             });
         }
         return Promise.resolve();
@@ -130,32 +138,46 @@ function playSound(type) {
     
     try {
         if (type === 'suspense' || type === 'adventure') {
+            // Detener música actual antes de cambiar
             stopMusic();
             currentMusic = audioElements[type];
             if (currentMusic) {
                 currentMusic.currentTime = 0;
-                currentMusic.play().catch(e => {
-                    // Silenciosamente ignorar errores de reproducción
-                });
+                // En iOS, usar una promesa para asegurar que se reproduce
+                const playPromise = currentMusic.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(e => {
+                        console.log('🔇 Audio play prevented:', e.message);
+                    });
+                }
             }
         } else {
+            // Para efectos de sonido, NO detener la música de fondo
             const audio = audioElements[type];
             if (audio) {
                 audio.currentTime = 0;
-                audio.play().catch(e => {
-                    // Silenciosamente ignorar errores de reproducción
-                });
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(e => {
+                        console.log('🔇 Audio play prevented:', e.message);
+                    });
+                }
             }
         }
     } catch (e) {
-        // Silenciosamente ignorar errores
+        console.log('🔇 Audio error:', e.message);
     }
 }
 
 function stopMusic() {
     if (currentMusic) {
-        currentMusic.pause();
-        currentMusic.currentTime = 0;
+        try {
+            currentMusic.pause();
+            currentMusic.currentTime = 0;
+            currentMusic = null;
+        } catch (e) {
+            console.log('🔇 Error stopping music:', e.message);
+        }
     }
 }
 
@@ -597,6 +619,16 @@ function generateMaze() {
     if (attempts === maxAttempts) {
         console.warn('No se pudo generar un laberinto resoluble, usando el último intento');
     }
+    
+    // Log de depuración para iOS
+    if (isIOS) {
+        console.log('🗺️ Maze generated:', {
+            size: GRID_SIZE,
+            playerStart: [1, 1],
+            goal: goalPosition,
+            mazePreview: maze.map(row => row.join('')).join('\n')
+        });
+    }
 }
 
 function addTraps() {
@@ -899,6 +931,14 @@ function deleteStep(index) {
 async function executeSequence() {
     if (movementSequence.length === 0) return;
     
+    console.log('🎬 Starting sequence execution:', {
+        sequenceLength: movementSequence.length,
+        sequence: movementSequence,
+        playerStart: playerPosition,
+        goal: goalPosition,
+        isIOS
+    });
+    
     timerRunning = false;
     disableMoveButtons();
     playSound('adventure');
@@ -906,6 +946,8 @@ async function executeSequence() {
     for (let i = 0; i < movementSequence.length; i++) {
         const move = movementSequence[i];
         let moved = false;
+        
+        console.log(`\n📍 Step ${i + 1}/${movementSequence.length}:`, move);
         
         // Hacer scroll automático al elemento actual dentro del contenedor
         const currentElement = document.getElementById(`seq-${i}`);
@@ -959,6 +1001,7 @@ async function executeSequence() {
                 stopMusic();
                 playSound('error');
                 showMessage('❌ Movimiento inválido', 'red');
+                enableButtons();
                 return;
             }
             
@@ -968,26 +1011,33 @@ async function executeSequence() {
         }
         
         if (moved) {
-            document.getElementById(`tick-${i}`).textContent = '✔';
-            document.getElementById(`seq-${i}`).classList.add('completed');
+            console.log('✅ Movement successful, updating UI');
+            const tickElement = document.getElementById(`tick-${i}`);
+            const seqElement = document.getElementById(`seq-${i}`);
+            if (tickElement) tickElement.textContent = '✔';
+            if (seqElement) seqElement.classList.add('completed');
         }
         
         if (!moved) {
+            console.log('❌ Movement failed, stopping execution');
             stopMusic();
             playSound('error');
             showMessage('❌ Movimiento inválido', 'red');
+            enableButtons();
             return;
         }
         
         // Verificar si ganó
         if (playerPosition[0] === goalPosition[0] && playerPosition[1] === goalPosition[1]) {
-            // No detener la música de aventura, solo reproducir fanfare como efecto
+            // Detener la música de aventura y reproducir fanfare
+            stopMusic();
             if (audioEnabled && audioElements.fanfare) {
                 audioElements.fanfare.currentTime = 0;
                 audioElements.fanfare.play().catch(e => console.log('Audio play prevented:', e));
             }
             showMessage('🎉 ¡Ganaste!', 'green');
             showWinnerModal();
+            enableButtons();
             return;
         }
         
@@ -999,6 +1049,7 @@ async function executeSequence() {
     stopMusic();
     playSound('error');
     showMessage('No llegaste a la meta', 'orange');
+    enableButtons();
 }
 
 function movePlayer(direction, jump = false) {
@@ -1009,11 +1060,28 @@ function movePlayer(direction, jump = false) {
     else if (direction === 'izquierda') dx = -1;
     else if (direction === 'derecha') dx = 1;
     
+    console.log('🎮 movePlayer:', {
+        direction,
+        jump,
+        currentPos: playerPosition,
+        dx,
+        dy,
+        isIOS
+    });
+    
     if (jump) {
         const mx = playerPosition[0] + dx;
         const my = playerPosition[1] + dy;
         const nx = playerPosition[0] + 2 * dx;
         const ny = playerPosition[1] + 2 * dy;
+        
+        console.log('⏭️ Jump attempt:', {
+            middlePos: [mx, my],
+            targetPos: [nx, ny],
+            middleCell: maze[my]?.[mx],
+            targetCell: maze[ny]?.[nx],
+            inBounds: nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE
+        });
         
         if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE &&
             mx >= 0 && mx < GRID_SIZE && my >= 0 && my < GRID_SIZE) {
@@ -1023,8 +1091,13 @@ function movePlayer(direction, jump = false) {
                 playerPosition[1] = ny;
                 drawMaze();
                 playSound('jump');
+                console.log('✅ Jump successful to:', [nx, ny]);
                 return true;
+            } else {
+                console.log('❌ Jump blocked - middle or target cell invalid');
             }
+        } else {
+            console.log('❌ Jump out of bounds');
         }
         return false;
     }
@@ -1032,14 +1105,23 @@ function movePlayer(direction, jump = false) {
     const nx = playerPosition[0] + dx;
     const ny = playerPosition[1] + dy;
     
+    console.log('🚶 Move attempt:', {
+        targetPos: [nx, ny],
+        targetCell: maze[ny]?.[nx],
+        inBounds: nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE,
+        isFloor: maze[ny]?.[nx] === 0
+    });
+    
     if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE && maze[ny][nx] === 0) {
         markVisited(playerPosition[0], playerPosition[1]);
         playerPosition[0] = nx;
         playerPosition[1] = ny;
         drawMaze();
+        console.log('✅ Move successful to:', [nx, ny]);
         return true;
     }
     
+    console.log('❌ Move blocked or out of bounds');
     return false;
 }
 
