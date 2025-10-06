@@ -160,10 +160,18 @@ function playSound(type) {
     try {
         if (type === 'suspense' || type === 'adventure') {
             // Detener música actual antes de cambiar
-            stopMusic();
+            const previousMusic = currentMusic;
+            if (previousMusic) {
+                console.log('⏹️ Deteniendo música anterior antes de cambiar a:', type);
+                previousMusic.pause();
+                previousMusic.currentTime = 0;
+            }
+            
+            // Establecer nueva música
             currentMusic = audioElements[type];
             if (currentMusic) {
                 currentMusic.currentTime = 0;
+                console.log('▶️ Reproduciendo nueva música:', type);
                 // En iOS, usar una promesa para asegurar que se reproduce
                 const playPromise = currentMusic.play();
                 if (playPromise !== undefined) {
@@ -171,6 +179,7 @@ function playSound(type) {
                         .then(() => console.log('✅ Música reproducida:', type))
                         .catch(e => {
                             console.log('🔇 Audio play prevented:', e.message);
+                            currentMusic = null;
                         });
                 }
             }
@@ -203,7 +212,6 @@ function stopMusic() {
             console.log('⏹️ Deteniendo música actual:', currentMusic.src ? currentMusic.src.split('/').pop() : 'desconocida');
             currentMusic.pause();
             currentMusic.currentTime = 0;
-            currentMusic = null;
             console.log('✅ Música detenida correctamente');
         } catch (e) {
             console.log('🔇 Error stopping music:', e.message);
@@ -211,6 +219,8 @@ function stopMusic() {
     } else {
         console.log('⏹️ No hay música actual para detener');
     }
+    // Limpiar la referencia SIEMPRE, incluso si hubo error
+    currentMusic = null;
 }
 
 // Texturas (colores simulados como fallback)
@@ -494,7 +504,12 @@ function init() {
                 audioToggleDiv.classList.remove('needs-interaction');
             }
         } else {
-            playSound('suspense');
+            // Desbloquear audio con la interacción del usuario
+            unlockAudio();
+            // Reproducir música de suspense después de desbloquear
+            setTimeout(() => {
+                playSound('suspense');
+            }, 100);
             // Mostrar glow si el audio no está desbloqueado
             if (!audioUnlocked) {
                 showAudioNeedsInteraction();
@@ -503,17 +518,44 @@ function init() {
     });
 
     // Event listeners para botones de movimiento
-    upBtn.addEventListener('click', () => addMovement('arriba'));
-    downBtn.addEventListener('click', () => addMovement('abajo'));
-    leftBtn.addEventListener('click', () => addMovement('izquierda'));
-    rightBtn.addEventListener('click', () => addMovement('derecha'));
-    jumpBtn.addEventListener('click', () => addJump());
+    upBtn.addEventListener('click', () => {
+        unlockAudio();
+        addMovement('arriba');
+    });
+    downBtn.addEventListener('click', () => {
+        unlockAudio();
+        addMovement('abajo');
+    });
+    leftBtn.addEventListener('click', () => {
+        unlockAudio();
+        addMovement('izquierda');
+    });
+    rightBtn.addEventListener('click', () => {
+        unlockAudio();
+        addMovement('derecha');
+    });
+    jumpBtn.addEventListener('click', () => {
+        unlockAudio();
+        addJump();
+    });
 
     // Event listeners para botones de control
-    startBtn.addEventListener('click', () => executeSequence());
-    newBtn.addEventListener('click', () => resetGame());
-    clearBtn.addEventListener('click', () => clearGame());
-    rankingBtn.addEventListener('click', () => showRanking());
+    startBtn.addEventListener('click', () => {
+        unlockAudio();
+        executeSequence();
+    });
+    newBtn.addEventListener('click', () => {
+        unlockAudio();
+        resetGame();
+    });
+    clearBtn.addEventListener('click', () => {
+        unlockAudio();
+        clearGame();
+    });
+    rankingBtn.addEventListener('click', () => {
+        unlockAudio();
+        showRanking();
+    });
 
     // Event listeners para edición
     editModeBtn.addEventListener('click', () => toggleEditMode());
