@@ -339,6 +339,28 @@ function loadTextures() {
     });
 }
 
+// Función para detectar dispositivos táctiles
+function isTouchDevice() {
+    return (('ontouchstart' in window) ||
+            (navigator.maxTouchPoints > 0) ||
+            (navigator.msMaxTouchPoints > 0));
+}
+
+// Función para mover botones de movimiento al toolbar en dispositivos táctiles
+function setupMobileLayout() {
+    if (isTouchDevice()) {
+        const movementButtons = document.querySelector('.movement-buttons');
+        const leftPanel = document.querySelector('.left-panel');
+        const canvas = document.getElementById('gameCanvas');
+        
+        if (movementButtons && leftPanel && canvas) {
+            // Insertar los botones de movimiento antes del canvas
+            leftPanel.insertBefore(movementButtons, canvas);
+            console.log('✓ Botones de movimiento movidos al toolbar (iOS/Touch)');
+        }
+    }
+}
+
 // Inicialización
 function init() {
     // Mostrar mensaje si es iOS
@@ -349,6 +371,9 @@ function init() {
         console.log('   • Scroll instantáneo activado');
         console.log('   • Drop-shadows desactivados');
     }
+    
+    // Configurar layout móvil (mover botones al toolbar)
+    setupMobileLayout();
     
     // Inicializar audio
     initAudio();
