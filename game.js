@@ -146,8 +146,16 @@ function showAudioNeedsInteraction() {
 }
 
 function playSound(type) {
-    if (!audioEnabled) return;
-    if (!audioUnlocked) return; // No intentar reproducir si el audio no está desbloqueado
+    if (!audioEnabled) {
+        console.log('🔇 Audio desactivado, no se reproduce:', type);
+        return;
+    }
+    if (!audioUnlocked) {
+        console.log('🔇 Audio bloqueado, no se reproduce:', type);
+        return;
+    }
+    
+    console.log('🔊 Intentando reproducir:', type);
     
     try {
         if (type === 'suspense' || type === 'adventure') {
@@ -159,22 +167,29 @@ function playSound(type) {
                 // En iOS, usar una promesa para asegurar que se reproduce
                 const playPromise = currentMusic.play();
                 if (playPromise !== undefined) {
-                    playPromise.catch(e => {
-                        console.log('🔇 Audio play prevented:', e.message);
-                    });
+                    playPromise
+                        .then(() => console.log('✅ Música reproducida:', type))
+                        .catch(e => {
+                            console.log('🔇 Audio play prevented:', e.message);
+                        });
                 }
             }
         } else {
             // Para efectos de sonido, NO detener la música de fondo
             const audio = audioElements[type];
             if (audio) {
+                console.log('🔊 Elemento de audio encontrado:', type, audio);
                 audio.currentTime = 0;
                 const playPromise = audio.play();
                 if (playPromise !== undefined) {
-                    playPromise.catch(e => {
-                        console.log('🔇 Audio play prevented:', e.message);
-                    });
+                    playPromise
+                        .then(() => console.log('✅ Efecto de sonido reproducido:', type))
+                        .catch(e => {
+                            console.log('🔇 Audio play prevented:', e.message);
+                        });
                 }
+            } else {
+                console.log('❌ Elemento de audio NO encontrado:', type);
             }
         }
     } catch (e) {
@@ -980,7 +995,7 @@ async function executeSequence() {
             
             if (!lastDir) {
                 stopMusic();
-                playSound('error');
+                setTimeout(() => playSound('error'), 100);
                 showMessage('❌ Movimiento inválido', 'red');
                 enableButtons();
                 return;
@@ -1002,7 +1017,7 @@ async function executeSequence() {
         if (!moved) {
             console.log('❌ Movement failed, stopping execution');
             stopMusic();
-            playSound('error');
+            setTimeout(() => playSound('error'), 100);
             showMessage('❌ Movimiento inválido', 'red');
             enableButtons();
             return;
@@ -1028,7 +1043,7 @@ async function executeSequence() {
     
     // Si terminó la secuencia sin ganar
     stopMusic();
-    playSound('error');
+    setTimeout(() => playSound('error'), 100);
     showMessage('No llegaste a la meta', 'orange');
     enableButtons();
 }

@@ -844,11 +844,14 @@ header h1 {
         align-items: center;
     }
     
-    /* Canvas */
+    /* Canvas - Limitar tamaño para que no ocupe toda la pantalla */
     #gameCanvas {
-        width: 100%;
-        max-width: 100%;
+        width: auto;
+        max-width: min(90vw, 400px);
+        max-height: min(50vh, 400px);
         height: auto;
+        display: block;
+        margin: 0 auto;
     }
     
     /* Botones de movimiento cuando están en el left-panel (movidos por JS) */
