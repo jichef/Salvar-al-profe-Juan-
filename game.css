@@ -860,6 +860,11 @@ header h1 {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+    /* Optimización para iOS */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
 }
 
 .leaf-top {
@@ -897,4 +902,28 @@ header h1 {
     filter: drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.35));
     transform: rotate(var(--leaf-rotation, 0deg)) scale(calc(var(--leaf-scale, 1) * 1.15)) !important;
     z-index: 20;
+}
+
+/* Optimizaciones específicas para iOS/Safari */
+@supports (-webkit-touch-callout: none) {
+    /* Reducir efectos costosos en iOS */
+    .leaf {
+        filter: none; /* Eliminar drop-shadow en iOS */
+        animation-duration: 0.5s; /* Animaciones más rápidas */
+    }
+    
+    .leaf:hover {
+        filter: none; /* Sin drop-shadow en hover en iOS */
+    }
+    
+    /* Optimizar canvas en iOS */
+    #gameCanvas {
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+    }
+    
+    /* Desactivar smooth scroll en iOS para mejor rendimiento */
+    .sequence-container {
+        scroll-behavior: auto !important;
+    }
 }

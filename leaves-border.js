@@ -6,6 +6,15 @@ class LeavesBorder {
         this.leafImages = ['assets/hoja1.png', 'assets/hoja2.png', 'assets/hoja3.png', 'assets/hoja4.png', 'assets/hoja5.png', 'assets/hoja6.png', 'assets/hoja7.png'];
         this.leafSize = 18; // Tamaño base de cada hoja en píxeles (espaciado muy denso - franja estrecha)
         this.exclusionZones = []; // Zonas donde no se deben generar hojas
+        
+        // Detectar si es iOS/iPhone para optimizar rendimiento
+        this.isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        
+        if (this.isIOS) {
+            console.log('🍎 iOS detectado - Modo de rendimiento optimizado activado');
+        }
+        
         this.init();
     }
 
@@ -39,8 +48,14 @@ class LeavesBorder {
         const height = rect.height;
 
         // Calcular cuántas hojas caben en cada lado
-        const topBottomCount = Math.floor(width / this.leafSize);
-        const leftRightCount = Math.floor(height / this.leafSize);
+        let topBottomCount = Math.floor(width / this.leafSize);
+        let leftRightCount = Math.floor(height / this.leafSize);
+        
+        // En iOS, reducir la cantidad de hojas a la mitad para mejor rendimiento
+        if (this.isIOS) {
+            topBottomCount = Math.floor(topBottomCount * 0.5);
+            leftRightCount = Math.floor(leftRightCount * 0.5);
+        }
 
         // Limpiar hojas existentes
         this.leavesWrapper.innerHTML = '';
@@ -49,6 +64,9 @@ class LeavesBorder {
         this.updateExclusionZones();
 
         // Generar múltiples capas de hojas para mayor densidad
+        // En iOS, solo generar 2 capas en lugar de 3
+        const maxLayers = this.isIOS ? 2 : 3;
+        
         // Capa 1 (más externa)
         this.createLeavesForSide('top', topBottomCount, width, 0);
         this.createLeavesForSide('bottom', topBottomCount, width, 0);
@@ -61,11 +79,13 @@ class LeavesBorder {
         this.createLeavesForSide('left', leftRightCount, height, 1);
         this.createLeavesForSide('right', leftRightCount, height, 1);
         
-        // Capa 3 (más interna)
-        this.createLeavesForSide('top', Math.floor(topBottomCount * 0.8), width, 2);
-        this.createLeavesForSide('bottom', Math.floor(topBottomCount * 0.8), width, 2);
-        this.createLeavesForSide('left', Math.floor(leftRightCount * 0.8), height, 2);
-        this.createLeavesForSide('right', Math.floor(leftRightCount * 0.8), height, 2);
+        // Capa 3 (más interna) - Solo en dispositivos no-iOS
+        if (maxLayers === 3) {
+            this.createLeavesForSide('top', Math.floor(topBottomCount * 0.8), width, 2);
+            this.createLeavesForSide('bottom', Math.floor(topBottomCount * 0.8), width, 2);
+            this.createLeavesForSide('left', Math.floor(leftRightCount * 0.8), height, 2);
+            this.createLeavesForSide('right', Math.floor(leftRightCount * 0.8), height, 2);
+        }
     }
 
     createLeavesForSide(side, count, totalLength, layer = 0) {
@@ -124,6 +144,11 @@ class LeavesBorder {
             leaf.style.setProperty('--leaf-scale', scale);
             leaf.style.transform = `rotate(${rotation}deg) scale(${scale})`;
             
+            // En iOS, usar will-change para optimizar el rendering
+            if (this.isIOS) {
+                leaf.style.willChange = 'transform, opacity';
+            }
+            
             if (side === 'top') {
                 leaf.style.top = `${finalOffset}px`;
             } else if (side === 'bottom') {
@@ -137,8 +162,9 @@ class LeavesBorder {
             // Z-index según la capa (capas externas más atrás)
             leaf.style.zIndex = 10 - layer;
 
-            // Animación de entrada con delay aleatorio
-            leaf.style.animationDelay = `${Math.random() * 1.2}s`;
+            // Animación de entrada con delay aleatorio (más rápida en iOS)
+            const animationDelay = this.isIOS ? Math.random() * 0.6 : Math.random() * 1.2;
+            leaf.style.animationDelay = `${animationDelay}s`;
 
             this.leavesWrapper.appendChild(leaf);
         }
@@ -201,5 +227,4 @@ let leavesBorderInstance = null;
 // Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
     leavesBorderInstance = new LeavesBorder('.game-container');
-
 });

@@ -17,9 +17,16 @@ let keyboardEnabled = true;
 let audioEnabled = true;
 let lastCanvasSize = { width: 0, height: 0 }; // Para detectar cambios de tamaño
 
+// Detectar iOS para optimizaciones de rendimiento
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+              (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
 // Elementos del DOM
 const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+const ctx = canvas.getContext('2d', { 
+    alpha: false, // Desactivar canal alpha para mejor rendimiento
+    desynchronized: isIOS // Permitir rendering asíncrono en iOS
+});
 const sequenceContainer = document.getElementById('sequenceContainer');
 const timerDisplay = document.getElementById('timer');
 const difficultySelect = document.getElementById('difficulty');
@@ -179,7 +186,7 @@ let customCharacterImage = null;
 // Función para cargar la textura del jugador
 function loadPlayerTexture(imageName) {
     // Si es muñeco.png, usar emoji en lugar de cargar imagen
-    if (imageName === 'assets/muñeco.png') {
+    if (imageName === 'muñeco.png') {
         PLAYER_EMOJI = '🧑‍🚒'; // Emoji de aventurero escalando
         texturePlayer = null; // No usar imagen, usar emoji
         console.log('✓ Usando emoji de aventurero 🧗');
@@ -213,7 +220,7 @@ function loadPlayerTexture(imageName) {
         texturePlayer = null;
         drawMaze(); // Redibujar aunque falle
     };
-    texturePlayer.src = imageName;
+    texturePlayer.src = 'assets/' + imageName;
 }
 
 // Cargar texturas
@@ -274,7 +281,7 @@ function loadTextures() {
         const initialCharacter = characterSelect ? characterSelect.value : 'muñeco.png';
         
         // Si es muñeco.png, usar emoji directamente
-        if (initialCharacter === 'assets/muñeco.png') {
+        if (initialCharacter === 'muñeco.png') {
             PLAYER_EMOJI = '🧗'; // Emoji de aventurero escalando
             texturePlayer = null;
             console.log('✓ Usando emoji de aventurero 🧗');
@@ -299,6 +306,15 @@ function loadTextures() {
 
 // Inicialización
 function init() {
+    // Mostrar mensaje si es iOS
+    if (isIOS) {
+        console.log('🍎 iOS/iPhone detectado - Optimizaciones de rendimiento activadas');
+        console.log('   • Hojas decorativas reducidas a 50%');
+        console.log('   • Animaciones simplificadas');
+        console.log('   • Scroll instantáneo activado');
+        console.log('   • Drop-shadows desactivados');
+    }
+    
     // Inicializar audio
     initAudio();
     
@@ -622,15 +638,22 @@ function drawMaze() {
     canvas.width = newWidth;
     canvas.height = newHeight;
     
+    // En iOS, optimizar el rendering del canvas
+    if (isIOS) {
+        ctx.imageSmoothingEnabled = false; // Desactivar suavizado para mejor rendimiento
+    }
+    
     // Regenerar hojas SOLO si el tamaño del canvas cambió
     if (typeof leavesBorderInstance !== 'undefined' && leavesBorderInstance) {
         if (lastCanvasSize.width !== newWidth || lastCanvasSize.height !== newHeight) {
             lastCanvasSize.width = newWidth;
             lastCanvasSize.height = newHeight;
             // Usar setTimeout para asegurar que el DOM se haya actualizado
+            // En iOS, usar delay más corto
+            const delay = isIOS ? 20 : 50;
             setTimeout(() => {
                 leavesBorderInstance.regenerateLeaves();
-            }, 50);
+            }, delay);
         }
     }
     
@@ -786,9 +809,10 @@ function updateSequenceUI() {
                 
                 const scrollPosition = elementTop - (containerHeight / 2) + (elementHeight / 2);
                 
+                // En iOS, usar scroll instantáneo para mejor rendimiento
                 sequenceContainer.scrollTo({
                     top: scrollPosition,
-                    behavior: 'smooth'
+                    behavior: isIOS ? 'auto' : 'smooth'
                 });
             }
         }, 50);
@@ -843,9 +867,10 @@ async function executeSequence() {
                     scrollPosition
                 });
                 
+                // En iOS, usar scroll instantáneo para mejor rendimiento
                 sequenceContainer.scrollTo({
                     top: scrollPosition,
-                    behavior: 'smooth'
+                    behavior: isIOS ? 'auto' : 'smooth'
                 });
             }, 50);
         }
