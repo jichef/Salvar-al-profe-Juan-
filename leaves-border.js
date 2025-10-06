@@ -34,7 +34,9 @@ class LeavesBorder {
 
         // Regenerar hojas cuando cambie el tamaño de la ventana
         // SOLO en dispositivos NO móviles (mejor rendimiento en móviles)
-        if (!this.isMobile()) {
+        const isMobileDevice = this.isMobile();
+        
+        if (!isMobileDevice) {
             let resizeTimeout;
             window.addEventListener('resize', () => {
                 clearTimeout(resizeTimeout);
@@ -42,8 +44,9 @@ class LeavesBorder {
                     this.regenerateLeaves();
                 }, 250);
             });
+            console.log('🖥️ Dispositivo desktop - Hojas adaptativas activadas');
         } else {
-            console.log('📱 Dispositivo móvil detectado - Hojas fijas (sin regeneración)');
+            console.log('📱 Dispositivo móvil/tablet detectado - Hojas fijas (sin regeneración al rotar)');
         }
     }
 
@@ -181,8 +184,31 @@ class LeavesBorder {
 
     // Detectar si es un dispositivo móvil (táctil)
     isMobile() {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-               (navigator.maxTouchPoints && navigator.maxTouchPoints > 1);
+        // Detectar iPad moderno (que se identifica como Mac)
+        const isIPad = (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ||
+                       /iPad/.test(navigator.userAgent);
+        
+        // Detectar otros dispositivos móviles
+        const isMobileUA = /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        // Detectar dispositivos táctiles en general
+        const isTouchDevice = (navigator.maxTouchPoints && navigator.maxTouchPoints > 1) ||
+                             ('ontouchstart' in window);
+        
+        // Log de depuración para iPad
+        if (isIPad || isMobileUA || isTouchDevice) {
+            console.log('🔍 Detección de dispositivo:', {
+                'iPad detectado': isIPad,
+                'Móvil por UA': isMobileUA,
+                'Dispositivo táctil': isTouchDevice,
+                'Platform': navigator.platform,
+                'MaxTouchPoints': navigator.maxTouchPoints,
+                'UserAgent': navigator.userAgent.substring(0, 100)
+            });
+        }
+        
+        // Retornar true si es iPad o cualquier otro móvil/tablet
+        return isIPad || isMobileUA || isTouchDevice;
     }
 
     // Actualizar las zonas de exclusión basadas en elementos del DOM
