@@ -200,12 +200,16 @@ function playSound(type) {
 function stopMusic() {
     if (currentMusic) {
         try {
+            console.log('⏹️ Deteniendo música actual:', currentMusic.src ? currentMusic.src.split('/').pop() : 'desconocida');
             currentMusic.pause();
             currentMusic.currentTime = 0;
             currentMusic = null;
+            console.log('✅ Música detenida correctamente');
         } catch (e) {
             console.log('🔇 Error stopping music:', e.message);
         }
+    } else {
+        console.log('⏹️ No hay música actual para detener');
     }
 }
 
@@ -994,7 +998,11 @@ async function executeSequence() {
             
             if (!lastDir) {
                 stopMusic();
-                setTimeout(() => playSound('error'), 100);
+                setTimeout(() => {
+                    playSound('error');
+                    // Después del error, volver a música de suspense
+                    setTimeout(() => playSound('suspense'), 500);
+                }, 100);
                 showMessage('❌ Movimiento inválido', 'red');
                 enableButtons();
                 return;
@@ -1016,7 +1024,11 @@ async function executeSequence() {
         if (!moved) {
             console.log('❌ Movement failed, stopping execution');
             stopMusic();
-            setTimeout(() => playSound('error'), 100);
+            setTimeout(() => {
+                playSound('error');
+                // Después del error, volver a música de suspense
+                setTimeout(() => playSound('suspense'), 500);
+            }, 100);
             showMessage('❌ Movimiento inválido', 'red');
             enableButtons();
             return;
@@ -1024,12 +1036,20 @@ async function executeSequence() {
         
         // Verificar si ganó
         if (playerPosition[0] === goalPosition[0] && playerPosition[1] === goalPosition[1]) {
-            // Detener la música de aventura y reproducir fanfare
-            stopMusic();
-            if (audioEnabled && audioElements.fanfare) {
+            // NO detener la música de aventura, solo reproducir fanfarria encima
+            console.log('🎉 ¡Victoria! Reproduciendo fanfarria (aventura sigue sonando)');
+            
+            // Reproducir fanfarria como efecto de sonido (sin detener la música)
+            if (audioEnabled && audioUnlocked && audioElements.fanfare) {
+                console.log('🎺 Reproduciendo fanfarria de victoria');
                 audioElements.fanfare.currentTime = 0;
-                audioElements.fanfare.play().catch(e => console.log('Audio play prevented:', e));
+                audioElements.fanfare.play()
+                    .then(() => console.log('✅ Fanfarria reproducida correctamente'))
+                    .catch(e => console.log('🔇 Error al reproducir fanfarria:', e.message));
+            } else {
+                console.log('🔇 Fanfarria no reproducida - Audio:', audioEnabled, 'Desbloqueado:', audioUnlocked);
             }
+            
             showMessage('🎉 ¡Ganaste!', 'green');
             showWinnerModal();
             enableButtons();
@@ -1042,7 +1062,11 @@ async function executeSequence() {
     
     // Si terminó la secuencia sin ganar
     stopMusic();
-    setTimeout(() => playSound('error'), 100);
+    setTimeout(() => {
+        playSound('error');
+        // Después del error, volver a música de suspense
+        setTimeout(() => playSound('suspense'), 500);
+    }, 100);
     showMessage('No llegaste a la meta', 'orange');
     enableButtons();
 }
