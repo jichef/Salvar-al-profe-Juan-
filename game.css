@@ -69,6 +69,38 @@ body {
     }
 }
 
+/* Contenedor de imágenes del overlay */
+.overlay-images {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.overlay-header-image {
+    height: auto;
+    max-height: 180px;
+    filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.6));
+    animation: overlayImageFloat 3s ease-in-out infinite;
+}
+
+.overlay-teacher-image {
+    height: auto;
+    max-height: 220px;
+    filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.6));
+    animation: overlayImageFloat 3s ease-in-out 0.5s infinite;
+}
+
+@keyframes overlayImageFloat {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
 .start-overlay-content h1 {
     font-family: 'Poppins', 'Inter', sans-serif;
     font-size: 3em;

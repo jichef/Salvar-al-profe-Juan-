@@ -291,7 +291,9 @@ function init() {
     
     // Event listener para el botón de inicio del overlay
     if (startGameBtn && startOverlay) {
+        console.log('✓ Overlay y botón encontrados, registrando evento...');
         startGameBtn.addEventListener('click', () => {
+            console.log('✓ Botón de inicio clickeado');
             // Activar audio automáticamente
             audioEnabled = true;
             audioCheckbox.checked = true;
@@ -302,6 +304,8 @@ function init() {
             // Reproducir música de fondo
             playSound('suspense');
         });
+    } else {
+        console.error('✗ No se encontró el overlay o el botón:', { startOverlay, startGameBtn });
     }
     
     // Mostrar mensaje de activación de audio (fallback por si no hay overlay)
