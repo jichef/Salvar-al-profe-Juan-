@@ -103,7 +103,7 @@ function initAudio() {
     }
 }
 
-function playSound(type) {
+function playSound(type, pauseMusic = false) {
     if (!audioEnabled) return;
     
     try {
@@ -117,6 +117,18 @@ function playSound(type) {
         } else {
             const audio = audioElements[type];
             if (audio) {
+                // Si se solicita pausar la música, guardar el estado
+                if (pauseMusic && currentMusic && !currentMusic.paused) {
+                    currentMusic.pause();
+                    
+                    // Cuando termine el efecto de sonido, reanudar la música
+                    audio.addEventListener('ended', () => {
+                        if (currentMusic && audioEnabled) {
+                            currentMusic.play().catch(e => console.log('Audio resume prevented:', e));
+                        }
+                    }, { once: true });
+                }
+                
                 audio.currentTime = 0;
                 audio.play().catch(e => console.log('Audio play prevented:', e));
             }
@@ -946,8 +958,7 @@ async function executeSequence() {
             }
             
             if (!lastDir) {
-                stopMusic();
-                playSound('error');
+                playSound('error', true); // Pausar música y reanudar después
                 showMessage('❌ Movimiento inválido', 'red');
                 enableButtons();
                 return;
@@ -964,8 +975,7 @@ async function executeSequence() {
         }
         
         if (!moved) {
-            stopMusic();
-            playSound('error');
+            playSound('error', true); // Pausar música y reanudar después
             showMessage('❌ Movimiento inválido', 'red');
             enableButtons();
             return;
@@ -973,8 +983,7 @@ async function executeSequence() {
         
         // Verificar si ganó
         if (playerPosition[0] === goalPosition[0] && playerPosition[1] === goalPosition[1]) {
-            stopMusic();
-            playSound('fanfare');
+            playSound('fanfare', true); // Pausar música y reanudar después
             showMessage('🎉 ¡Ganaste!', 'green');
             showWinnerModal();
             enableButtons();
@@ -986,8 +995,7 @@ async function executeSequence() {
     }
     
     // Si terminó la secuencia sin ganar
-    stopMusic();
-    playSound('error');
+    playSound('error', true); // Pausar música y reanudar después
     showMessage('No llegaste a la meta', 'orange');
     enableButtons();
 }
@@ -1744,8 +1752,8 @@ async function generatePDF(difficulty) {
         document.body.appendChild(loadingMsg);
         
         // Cargar imágenes de cabecera y emoji
-        const cabeceraImg = await loadImageAsBase64('assets/cabecera.png');
-        const teacherImg = await loadImageAsBase64('assets/teacher.png');
+        const cabeceraImg = await loadImageAsBase64('cabecera.png');
+        const teacherImg = await loadImageAsBase64('teacher.png');
         const targetEmoji = emojiToBase64('🎯', 128); // Emoji de meta como imagen
         
         // Crear instancia de jsPDF
@@ -2061,7 +2069,7 @@ async function generatePDF(difficulty) {
         // Pie de página página 2
         doc.setFontSize(8);
         doc.setTextColor(100, 100, 100);
-        doc.text('Salvar al profe Juan - Laberintos Educativos', pageWidth / 2, pageHeight - 10, { align: 'center' });
+        doc.text('Saving Teacher Juan - Laberintos Educativos', pageWidth / 2, pageHeight - 10, { align: 'center' });
         
         // Guardar el PDF
         const difficultyName = difficulty === 5 ? 'Facil' : 'Intermedio';
@@ -2119,5 +2127,4 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {
     init();
-
 }

@@ -612,6 +612,7 @@ header h1 {
     padding: 10px;
     overflow-y: auto;
     min-height: 400px;
+    max-height: 600px; /* Limita la altura máxima para forzar scroll */
     background: #fafafa;
 }
 
@@ -1184,6 +1185,7 @@ header h1 {
     /* Ajustar altura de la secuencia para que coincida con el panel derecho */
     .sequence-container {
         min-height: 300px;
+        max-height: 500px; /* Limita la altura en pantallas más pequeñas */
     }
 }
 
