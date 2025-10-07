@@ -4,17 +4,8 @@ class LeavesBorder {
         this.container = document.querySelector(containerSelector);
         this.leavesWrapper = null;
         this.leafImages = ['assets/hoja1.png', 'assets/hoja2.png', 'assets/hoja3.png', 'assets/hoja4.png', 'assets/hoja5.png', 'assets/hoja6.png', 'assets/hoja7.png'];
-        this.leafSize = 18; // Tamaño base de cada hoja en píxeles (espaciado muy denso - franja estrecha)
+        this.leafSize = 30; // Tamaño base de cada hoja en píxeles (espaciado moderado)
         this.exclusionZones = []; // Zonas donde no se deben generar hojas
-        
-        // Detectar si es iOS/iPhone para optimizar rendimiento
-        this.isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-        
-        if (this.isIOS) {
-            console.log('🍎 iOS detectado - Modo de rendimiento optimizado activado');
-        }
-        
         this.init();
     }
 
@@ -33,21 +24,13 @@ class LeavesBorder {
         this.generateLeaves();
 
         // Regenerar hojas cuando cambie el tamaño de la ventana
-        // SOLO en dispositivos NO móviles (mejor rendimiento en móviles)
-        const isMobileDevice = this.isMobile();
-        
-        if (!isMobileDevice) {
-            let resizeTimeout;
-            window.addEventListener('resize', () => {
-                clearTimeout(resizeTimeout);
-                resizeTimeout = setTimeout(() => {
-                    this.regenerateLeaves();
-                }, 250);
-            });
-            console.log('🖥️ Dispositivo desktop - Hojas adaptativas activadas');
-        } else {
-            console.log('📱 Dispositivo móvil/tablet detectado - Hojas fijas (sin regeneración al rotar)');
-        }
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                this.regenerateLeaves();
+            }, 250);
+        });
     }
 
     generateLeaves() {
@@ -56,14 +39,8 @@ class LeavesBorder {
         const height = rect.height;
 
         // Calcular cuántas hojas caben en cada lado
-        let topBottomCount = Math.floor(width / this.leafSize);
-        let leftRightCount = Math.floor(height / this.leafSize);
-        
-        // En iOS, reducir la cantidad de hojas a la mitad para mejor rendimiento
-        if (this.isIOS) {
-            topBottomCount = Math.floor(topBottomCount * 0.5);
-            leftRightCount = Math.floor(leftRightCount * 0.5);
-        }
+        const topBottomCount = Math.floor(width / this.leafSize);
+        const leftRightCount = Math.floor(height / this.leafSize);
 
         // Limpiar hojas existentes
         this.leavesWrapper.innerHTML = '';
@@ -71,10 +48,7 @@ class LeavesBorder {
         // Actualizar zonas de exclusión
         this.updateExclusionZones();
 
-        // Generar múltiples capas de hojas para mayor densidad
-        // En iOS, solo generar 2 capas en lugar de 3
-        const maxLayers = this.isIOS ? 2 : 3;
-        
+        // Generar 2 capas de hojas (densidad reducida)
         // Capa 1 (más externa)
         this.createLeavesForSide('top', topBottomCount, width, 0);
         this.createLeavesForSide('bottom', topBottomCount, width, 0);
@@ -86,14 +60,6 @@ class LeavesBorder {
         this.createLeavesForSide('bottom', topBottomCount, width, 1);
         this.createLeavesForSide('left', leftRightCount, height, 1);
         this.createLeavesForSide('right', leftRightCount, height, 1);
-        
-        // Capa 3 (más interna) - Solo en dispositivos no-iOS
-        if (maxLayers === 3) {
-            this.createLeavesForSide('top', Math.floor(topBottomCount * 0.8), width, 2);
-            this.createLeavesForSide('bottom', Math.floor(topBottomCount * 0.8), width, 2);
-            this.createLeavesForSide('left', Math.floor(leftRightCount * 0.8), height, 2);
-            this.createLeavesForSide('right', Math.floor(leftRightCount * 0.8), height, 2);
-        }
     }
 
     createLeavesForSide(side, count, totalLength, layer = 0) {
@@ -152,11 +118,6 @@ class LeavesBorder {
             leaf.style.setProperty('--leaf-scale', scale);
             leaf.style.transform = `rotate(${rotation}deg) scale(${scale})`;
             
-            // En iOS, usar will-change para optimizar el rendering
-            if (this.isIOS) {
-                leaf.style.willChange = 'transform, opacity';
-            }
-            
             if (side === 'top') {
                 leaf.style.top = `${finalOffset}px`;
             } else if (side === 'bottom') {
@@ -170,9 +131,8 @@ class LeavesBorder {
             // Z-index según la capa (capas externas más atrás)
             leaf.style.zIndex = 10 - layer;
 
-            // Animación de entrada con delay aleatorio (más rápida en iOS)
-            const animationDelay = this.isIOS ? Math.random() * 0.6 : Math.random() * 1.2;
-            leaf.style.animationDelay = `${animationDelay}s`;
+            // Animación de entrada con delay aleatorio
+            leaf.style.animationDelay = `${Math.random() * 1.2}s`;
 
             this.leavesWrapper.appendChild(leaf);
         }
@@ -180,35 +140,6 @@ class LeavesBorder {
 
     regenerateLeaves() {
         this.generateLeaves();
-    }
-
-    // Detectar si es un dispositivo móvil (táctil)
-    isMobile() {
-        // Detectar iPad moderno (que se identifica como Mac)
-        const isIPad = (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ||
-                       /iPad/.test(navigator.userAgent);
-        
-        // Detectar otros dispositivos móviles
-        const isMobileUA = /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
-        // Detectar dispositivos táctiles en general
-        const isTouchDevice = (navigator.maxTouchPoints && navigator.maxTouchPoints > 1) ||
-                             ('ontouchstart' in window);
-        
-        // Log de depuración para iPad
-        if (isIPad || isMobileUA || isTouchDevice) {
-            console.log('🔍 Detección de dispositivo:', {
-                'iPad detectado': isIPad,
-                'Móvil por UA': isMobileUA,
-                'Dispositivo táctil': isTouchDevice,
-                'Platform': navigator.platform,
-                'MaxTouchPoints': navigator.maxTouchPoints,
-                'UserAgent': navigator.userAgent.substring(0, 100)
-            });
-        }
-        
-        // Retornar true si es iPad o cualquier otro móvil/tablet
-        return isIPad || isMobileUA || isTouchDevice;
     }
 
     // Actualizar las zonas de exclusión basadas en elementos del DOM
