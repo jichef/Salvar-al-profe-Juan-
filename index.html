@@ -13,8 +13,8 @@
     <div class="container">
         <header>
             <div class="header-images">
-                <img src="assets/cabecera.png" alt="Saving Teacher Juan" class="header-image">
-                <img src="assets/teacher.png" alt="Teacher" class="teacher-image">
+                <img src="cabecera.png" alt="Saving Teacher Juan" class="header-image">
+                <img src="teacher.png" alt="Teacher" class="teacher-image">
             </div>
         </header>
 
@@ -34,9 +34,9 @@
                     <div class="character-selector">
                         <label for="character">Personaje:</label>
                         <select id="character">
-                            <option value="assets/checa.png">Profe Juan</option>
-                            <option value="assets/muñeco.png">Emoji</option>
-                            <option value="assets/adventurer.png">Aventurero</option>
+                            <option value="checa.png">Profe Juan</option>
+                            <option value="muñeco.png">Emoji</option>
+                            <option value="adventurer.png">Aventurero</option>
                             <option value="custom">¡Yo!</option>
                         </select>
                         <input type="file" id="customCharacter" accept="image/*" style="display: none;">
@@ -53,9 +53,15 @@
                     </div>
                     <div class="audio-toggle">
                         <label>
-                            <input type="checkbox" id="audioEnabled">
+                            <input type="checkbox" id="audioEnabled" checked>
                             🔊 Sonido
                         </label>
+                    </div>
+                    <div class="action-controls">
+                        <button id="startBtn" class="btn btn-success btn-compact" title="Iniciar secuencia">▶️</button>
+                        <button id="newBtn" class="btn btn-primary btn-compact" title="Nuevo laberinto">🔁</button>
+                        <button id="clearBtn" class="btn btn-warning btn-compact" title="Limpiar secuencia">🗑️</button>
+                        <button id="rankingBtn" class="btn btn-info btn-compact" title="Ver ranking">🏆</button>
                     </div>
                     <div class="edit-controls">
                         <button id="editModeBtn" class="btn btn-secondary btn-small" title="Editar laberinto">✏️</button>
@@ -72,13 +78,6 @@
             <div class="middle-panel">
                 <h3>Secuencia de Movimientos</h3>
                 <div id="sequenceContainer" class="sequence-container"></div>
-                
-                <div class="control-buttons">
-                    <button id="startBtn" class="btn btn-success">▶️ Iniciar</button>
-                    <button id="newBtn" class="btn btn-primary">🔁 Nuevo</button>
-                    <button id="clearBtn" class="btn btn-warning">🗑️ Limpiar</button>
-                    <button id="rankingBtn" class="btn btn-info">🏆 Ranking</button>
-                </div>
             </div>
 
             <!-- Panel derecho: Instrucciones y botones de movimiento -->
@@ -166,26 +165,21 @@
         </div>
     </div>
 
-    <!-- Mensaje de activación de audio -->
-    <div id="audioActivationMessage" class="audio-activation-message">
-        🔊 Haz clic aquí para activar el audio
-    </div>
-
     <!-- Audio elements -->
-    <audio id="suspenseAudio" loop preload="none">
-        <source src="assets/out.mp3" type="audio/mpeg">
+    <audio id="suspenseAudio" loop>
+        <source src="suspense.mp3" type="audio/mpeg">
     </audio>
-    <audio id="adventureAudio" loop preload="none">
-        <source src="assets/aventura.mp3" type="audio/mpeg">
+    <audio id="adventureAudio" loop>
+        <source src="aventura.mp3" type="audio/mpeg">
     </audio>
-    <audio id="errorAudio" preload="none">
-        <source src="assets/error.mp3" type="audio/mpeg">
+    <audio id="errorAudio">
+        <source src="error.wav" type="audio/wav">
     </audio>
-    <audio id="fanfareAudio" preload="none">
-        <source src="assets/fanfarria.mp3" type="audio/mpeg">
+    <audio id="fanfareAudio">
+        <source src="fanfarria.wav" type="audio/wav">
     </audio>
-    <audio id="jumpAudio" preload="none">
-        <source src="assets/salto.mp3" type="audio/mpeg">
+    <audio id="jumpAudio">
+        <source src="salto.wav" type="audio/wav">
     </audio>
 
     <!-- jsPDF library -->

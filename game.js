@@ -14,19 +14,12 @@ let timeElapsed = 0;
 let timerInterval = null;
 let editMode = false;
 let keyboardEnabled = true;
-let audioEnabled = false;
+let audioEnabled = false; // Cambiado a false por defecto
 let lastCanvasSize = { width: 0, height: 0 }; // Para detectar cambios de tamaño
-
-// Detectar iOS para optimizaciones de rendimiento
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-              (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
 // Elementos del DOM
 const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d', { 
-    alpha: false, // Desactivar canal alpha para mejor rendimiento
-    desynchronized: isIOS // Permitir rendering asíncrono en iOS
-});
+const ctx = canvas.getContext('2d');
 const sequenceContainer = document.getElementById('sequenceContainer');
 const timerDisplay = document.getElementById('timer');
 const difficultySelect = document.getElementById('difficulty');
@@ -35,7 +28,6 @@ const customCharacterInput = document.getElementById('customCharacter');
 const uploadCharacterBtn = document.getElementById('uploadCharacterBtn');
 const keyboardCheckbox = document.getElementById('keyboardEnabled');
 const audioCheckbox = document.getElementById('audioEnabled');
-const audioToggleDiv = document.querySelector('.audio-toggle');
 const audioActivationMessage = document.getElementById('audioActivationMessage');
 
 // Botones
@@ -52,6 +44,13 @@ const generatePdfBtn = document.getElementById('generatePdfBtn');
 const editModeBtn = document.getElementById('editModeBtn');
 const loadBtn = document.getElementById('loadBtn');
 const saveBtn = document.getElementById('saveBtn');
+
+// Botones móviles
+const upBtnMobile = document.getElementById('upBtnMobile');
+const downBtnMobile = document.getElementById('downBtnMobile');
+const leftBtnMobile = document.getElementById('leftBtnMobile');
+const rightBtnMobile = document.getElementById('rightBtnMobile');
+const jumpBtnMobile = document.getElementById('jumpBtnMobile');
 
 // Modales
 const rankingModal = document.getElementById('rankingModal');
@@ -72,24 +71,13 @@ const audioElements = {
 };
 
 let currentMusic = null;
-let audioUnlocked = false; // Flag para saber si el audio ha sido desbloqueado
 
 function initAudio() {
-    console.log('🎵 Inicializando elementos de audio...');
-    
     audioElements.suspense = document.getElementById('suspenseAudio');
     audioElements.adventure = document.getElementById('adventureAudio');
     audioElements.error = document.getElementById('errorAudio');
     audioElements.fanfare = document.getElementById('fanfareAudio');
     audioElements.jump = document.getElementById('jumpAudio');
-    
-    console.log('🎵 Elementos de audio encontrados:', {
-        suspense: !!audioElements.suspense,
-        adventure: !!audioElements.adventure,
-        error: !!audioElements.error,
-        fanfare: !!audioElements.fanfare,
-        jump: !!audioElements.jump
-    });
     
     // Configurar volumen
     if (audioElements.suspense) audioElements.suspense.volume = 0.5;
@@ -98,161 +86,45 @@ function initAudio() {
     if (audioElements.fanfare) audioElements.fanfare.volume = 0.8;
     if (audioElements.jump) audioElements.jump.volume = 0.6;
     
-    // Agregar event listener para loop de música suspense
+    // Configurar evento para reiniciar la música suspense cuando termine
     if (audioElements.suspense) {
         audioElements.suspense.addEventListener('ended', () => {
             if (audioEnabled && currentMusic === audioElements.suspense) {
                 audioElements.suspense.currentTime = 0;
-                audioElements.suspense.play().catch(e => {
-                    console.log('🔇 Error al reiniciar música suspense:', e.message);
-                });
+                audioElements.suspense.play().catch(e => console.log('Audio replay prevented:', e));
             }
         });
-    }
-    
-    console.log('✅ Audio inicializado correctamente');
-}
-
-// Función para desbloquear el audio con la primera interacción del usuario
-function unlockAudio() {
-    if (audioUnlocked) {
-        console.log('🔓 Audio ya desbloqueado');
-        return;
-    }
-    
-    console.log('🔐 Intentando desbloquear audio...');
-    
-    // Simplemente marcar como desbloqueado después de la primera interacción
-    // Los archivos se cargarán cuando se reproduzcan por primera vez
-    audioUnlocked = true;
-    console.log('✅ Audio desbloqueado - Los archivos se cargarán cuando se reproduzcan');
-    
-    // Quitar el efecto glow del audio toggle
-    if (audioToggleDiv) {
-        audioToggleDiv.classList.remove('needs-interaction');
-    }
-}
-
-// Función para activar el efecto glow en el audio toggle
-function showAudioNeedsInteraction() {
-    if (!audioUnlocked && audioToggleDiv && audioEnabled) {
-        audioToggleDiv.classList.add('needs-interaction');
     }
 }
 
 function playSound(type) {
-    if (!audioEnabled) {
-        console.log('🔇 Audio desactivado, no se reproduce:', type);
-        return;
-    }
-    if (!audioUnlocked) {
-        console.log('🔇 Audio bloqueado, no se reproduce:', type);
-        return;
-    }
-    
-    console.log('🔊 Intentando reproducir:', type);
+    if (!audioEnabled) return;
     
     try {
         if (type === 'suspense' || type === 'adventure') {
-            // Detener música actual antes de cambiar
-            const previousMusic = currentMusic;
-            if (previousMusic) {
-                console.log('⏹️ Deteniendo música anterior antes de cambiar a:', type);
-                previousMusic.pause();
-                previousMusic.currentTime = 0;
-            }
-            
-            // Establecer nueva música
+            stopMusic();
             currentMusic = audioElements[type];
             if (currentMusic) {
-                // Cargar el audio si no está cargado (lazy loading)
-                if (currentMusic.readyState === 0) {
-                    console.log('📥 Cargando audio:', type);
-                    currentMusic.load();
-                }
-                
                 currentMusic.currentTime = 0;
-                console.log('▶️ Reproduciendo nueva música:', type);
-                // En iOS, usar una promesa para asegurar que se reproduce
-                const playPromise = currentMusic.play();
-                if (playPromise !== undefined) {
-                    playPromise
-                        .then(() => console.log('✅ Música reproducida:', type))
-                        .catch(e => {
-                            console.log('🔇 Audio play prevented:', e.message);
-                            // Si falla, intentar cargar y reproducir de nuevo
-                            if (e.name === 'NotSupportedError' || e.name === 'NotAllowedError') {
-                                console.log('🔄 Reintentando con carga explícita...');
-                                currentMusic.load();
-                                setTimeout(() => {
-                                    currentMusic.play()
-                                        .then(() => console.log('✅ Música reproducida en segundo intento'))
-                                        .catch(e2 => {
-                                            console.log('🔇 Segundo intento fallido:', e2.message);
-                                            currentMusic = null;
-                                        });
-                                }, 100);
-                            } else {
-                                currentMusic = null;
-                            }
-                        });
-                }
+                currentMusic.play().catch(e => console.log('Audio play prevented:', e));
             }
         } else {
-            // Para efectos de sonido, NO detener la música de fondo
             const audio = audioElements[type];
             if (audio) {
-                console.log('🔊 Elemento de audio encontrado:', type, audio);
-                
-                // Cargar el audio si no está cargado (lazy loading)
-                if (audio.readyState === 0) {
-                    console.log('📥 Cargando audio:', type);
-                    audio.load();
-                }
-                
                 audio.currentTime = 0;
-                const playPromise = audio.play();
-                if (playPromise !== undefined) {
-                    playPromise
-                        .then(() => console.log('✅ Efecto de sonido reproducido:', type))
-                        .catch(e => {
-                            console.log('🔇 Audio play prevented:', e.message);
-                            // Si falla, intentar cargar y reproducir de nuevo
-                            if (e.name === 'NotSupportedError' || e.name === 'NotAllowedError') {
-                                console.log('🔄 Reintentando con carga explícita...');
-                                audio.load();
-                                setTimeout(() => {
-                                    audio.play()
-                                        .then(() => console.log('✅ Efecto reproducido en segundo intento'))
-                                        .catch(e2 => console.log('🔇 Segundo intento fallido:', e2.message));
-                                }, 100);
-                            }
-                        });
-                }
-            } else {
-                console.log('❌ Elemento de audio NO encontrado:', type);
+                audio.play().catch(e => console.log('Audio play prevented:', e));
             }
         }
     } catch (e) {
-        console.log('🔇 Audio error:', e.message);
+        console.log('Error playing sound:', e);
     }
 }
 
 function stopMusic() {
     if (currentMusic) {
-        try {
-            console.log('⏹️ Deteniendo música actual:', currentMusic.src ? currentMusic.src.split('/').pop() : 'desconocida');
-            currentMusic.pause();
-            currentMusic.currentTime = 0;
-            console.log('✅ Música detenida correctamente');
-        } catch (e) {
-            console.log('🔇 Error stopping music:', e.message);
-        }
-    } else {
-        console.log('⏹️ No hay música actual para detener');
+        currentMusic.pause();
+        currentMusic.currentTime = 0;
     }
-    // Limpiar la referencia SIEMPRE, incluso si hubo error
-    currentMusic = null;
 }
 
 // Texturas (colores simulados como fallback)
@@ -316,7 +188,7 @@ function loadPlayerTexture(imageName) {
         texturePlayer = null;
         drawMaze(); // Redibujar aunque falle
     };
-    texturePlayer.src = 'assets/' + imageName;
+    texturePlayer.src = imageName;
 }
 
 // Cargar texturas
@@ -345,7 +217,7 @@ function loadTextures() {
             textureFloor = null;
             checkAllLoaded();
         };
-        textureFloor.src = 'assets/textura_suelo.png';
+        textureFloor.src = 'textura_suelo.png';
         
         // Cargar textura de muro
         textureWall = new Image();
@@ -358,7 +230,7 @@ function loadTextures() {
             textureWall = null;
             checkAllLoaded();
         };
-        textureWall.src = 'assets/textura_muro.png';
+        textureWall.src = 'textura_muro.png';
         
         // Cargar textura de trampa
         textureTrap = new Image();
@@ -371,7 +243,7 @@ function loadTextures() {
             textureTrap = null;
             checkAllLoaded();
         };
-        textureTrap.src = 'assets/textura_trampa.png';
+        textureTrap.src = 'textura_trampa.png';
         
         // Cargar imagen del jugador (usar el valor del selector)
         const initialCharacter = characterSelect ? characterSelect.value : 'muñeco.png';
@@ -400,74 +272,23 @@ function loadTextures() {
     });
 }
 
-// Función para detectar dispositivos táctiles
-function isTouchDevice() {
-    return (('ontouchstart' in window) ||
-            (navigator.maxTouchPoints > 0) ||
-            (navigator.msMaxTouchPoints > 0));
-}
-
-// Función para mover botones de movimiento al toolbar en dispositivos táctiles
-function setupMobileLayout() {
-    if (isTouchDevice()) {
-        const movementButtons = document.querySelector('.movement-buttons');
-        const editControls = document.querySelector('.edit-controls');
-        
-        if (movementButtons && editControls) {
-            // Insertar los botones de movimiento dentro de edit-controls (al lado del botón PDF)
-            editControls.appendChild(movementButtons);
-            console.log('✓ Botones de movimiento movidos al lado del botón PDF (iOS/Touch)');
-        }
-    }
-}
-
 // Inicialización
 function init() {
-    // Mostrar mensaje si es iOS
-    if (isIOS) {
-        console.log('🍎 iOS/iPhone detectado - Optimizaciones de rendimiento activadas');
-        console.log('   • Hojas decorativas reducidas a 50%');
-        console.log('   • Animaciones simplificadas');
-        console.log('   • Scroll instantáneo activado');
-        console.log('   • Drop-shadows desactivados');
-    }
-    
-    // Configurar layout móvil (mover botones al toolbar)
-    setupMobileLayout();
-    
     // Inicializar audio
     initAudio();
     
     // Mostrar mensaje de activación de audio
     if (audioActivationMessage) {
-        audioActivationMessage.style.display = 'flex';
+        audioActivationMessage.classList.add('show');
+        
+        // Hacer clic en el mensaje para activar audio
         audioActivationMessage.addEventListener('click', () => {
             audioEnabled = true;
             audioCheckbox.checked = true;
-            audioActivationMessage.style.display = 'none';
-            unlockAudio();
+            audioActivationMessage.classList.remove('show');
             playSound('suspense');
-            console.log('✓ Audio activado por el usuario');
         });
     }
-    
-    // Mostrar el efecto glow después de 2 segundos si el audio no está desbloqueado
-    setTimeout(() => {
-        showAudioNeedsInteraction();
-    }, 2000);
-    
-    // Desbloquear audio con la primera interacción del usuario
-    const unlockAudioOnInteraction = () => {
-        unlockAudio();
-        // Remover los listeners después de la primera interacción
-        document.removeEventListener('click', unlockAudioOnInteraction);
-        document.removeEventListener('keydown', unlockAudioOnInteraction);
-        document.removeEventListener('touchstart', unlockAudioOnInteraction);
-    };
-    
-    document.addEventListener('click', unlockAudioOnInteraction);
-    document.addEventListener('keydown', unlockAudioOnInteraction);
-    document.addEventListener('touchstart', unlockAudioOnInteraction);
     
     difficultySelect.addEventListener('change', () => {
         GRID_SIZE = parseInt(difficultySelect.value);
@@ -531,63 +352,30 @@ function init() {
         audioEnabled = audioCheckbox.checked;
         if (!audioEnabled) {
             stopMusic();
-            // Quitar el glow si se desactiva el audio
-            if (audioToggleDiv) {
-                audioToggleDiv.classList.remove('needs-interaction');
-            }
         } else {
-            // Desbloquear audio con la interacción del usuario
-            unlockAudio();
-            // Reproducir música de suspense después de desbloquear
-            setTimeout(() => {
-                playSound('suspense');
-            }, 100);
-            // Mostrar glow si el audio no está desbloqueado
-            if (!audioUnlocked) {
-                showAudioNeedsInteraction();
-            }
+            playSound('suspense');
         }
     });
 
-    // Event listeners para botones de movimiento
-    upBtn.addEventListener('click', () => {
-        unlockAudio();
-        addMovement('arriba');
-    });
-    downBtn.addEventListener('click', () => {
-        unlockAudio();
-        addMovement('abajo');
-    });
-    leftBtn.addEventListener('click', () => {
-        unlockAudio();
-        addMovement('izquierda');
-    });
-    rightBtn.addEventListener('click', () => {
-        unlockAudio();
-        addMovement('derecha');
-    });
-    jumpBtn.addEventListener('click', () => {
-        unlockAudio();
-        addJump();
-    });
+    // Event listeners para botones de movimiento (desktop)
+    upBtn.addEventListener('click', () => addMovement('arriba'));
+    downBtn.addEventListener('click', () => addMovement('abajo'));
+    leftBtn.addEventListener('click', () => addMovement('izquierda'));
+    rightBtn.addEventListener('click', () => addMovement('derecha'));
+    jumpBtn.addEventListener('click', () => addJump());
+    
+    // Event listeners para botones de movimiento (móvil)
+    if (upBtnMobile) upBtnMobile.addEventListener('click', () => addMovement('arriba'));
+    if (downBtnMobile) downBtnMobile.addEventListener('click', () => addMovement('abajo'));
+    if (leftBtnMobile) leftBtnMobile.addEventListener('click', () => addMovement('izquierda'));
+    if (rightBtnMobile) rightBtnMobile.addEventListener('click', () => addMovement('derecha'));
+    if (jumpBtnMobile) jumpBtnMobile.addEventListener('click', () => addJump());
 
     // Event listeners para botones de control
-    startBtn.addEventListener('click', () => {
-        unlockAudio();
-        executeSequence();
-    });
-    newBtn.addEventListener('click', () => {
-        unlockAudio();
-        resetGame();
-    });
-    clearBtn.addEventListener('click', () => {
-        unlockAudio();
-        clearGame();
-    });
-    rankingBtn.addEventListener('click', () => {
-        unlockAudio();
-        showRanking();
-    });
+    startBtn.addEventListener('click', () => executeSequence());
+    newBtn.addEventListener('click', () => resetGame());
+    clearBtn.addEventListener('click', () => clearGame());
+    rankingBtn.addEventListener('click', () => showRanking());
 
     // Event listeners para edición
     editModeBtn.addEventListener('click', () => toggleEditMode());
@@ -691,16 +479,6 @@ function generateMaze() {
 
     if (attempts === maxAttempts) {
         console.warn('No se pudo generar un laberinto resoluble, usando el último intento');
-    }
-    
-    // Log de depuración para iOS
-    if (isIOS) {
-        console.log('🗺️ Maze generated:', {
-            size: GRID_SIZE,
-            playerStart: [1, 1],
-            goal: goalPosition,
-            mazePreview: maze.map(row => row.join('')).join('\n')
-        });
     }
 }
 
@@ -813,22 +591,15 @@ function drawMaze() {
     canvas.width = newWidth;
     canvas.height = newHeight;
     
-    // En iOS, optimizar el rendering del canvas
-    if (isIOS) {
-        ctx.imageSmoothingEnabled = false; // Desactivar suavizado para mejor rendimiento
-    }
-    
     // Regenerar hojas SOLO si el tamaño del canvas cambió
     if (typeof leavesBorderInstance !== 'undefined' && leavesBorderInstance) {
         if (lastCanvasSize.width !== newWidth || lastCanvasSize.height !== newHeight) {
             lastCanvasSize.width = newWidth;
             lastCanvasSize.height = newHeight;
             // Usar setTimeout para asegurar que el DOM se haya actualizado
-            // En iOS, usar delay más corto
-            const delay = isIOS ? 20 : 50;
             setTimeout(() => {
                 leavesBorderInstance.regenerateLeaves();
-            }, delay);
+            }, 50);
         }
     }
     
@@ -888,6 +659,8 @@ function drawMaze() {
 
 function drawPlayer() {
     const [x, y] = playerPosition;
+    
+    console.log('Drawing player at:', { x, y, playerPosition });
     
     // Usar imagen del muñeco si está cargada, sino usar emoji
     if (texturePlayer && texturePlayer.complete) {
@@ -984,10 +757,9 @@ function updateSequenceUI() {
                 
                 const scrollPosition = elementTop - (containerHeight / 2) + (elementHeight / 2);
                 
-                // En iOS, usar scroll instantáneo para mejor rendimiento
                 sequenceContainer.scrollTo({
                     top: scrollPosition,
-                    behavior: isIOS ? 'auto' : 'smooth'
+                    behavior: 'smooth'
                 });
             }
         }, 50);
@@ -1002,25 +774,19 @@ function deleteStep(index) {
 
 // Ejecución de la secuencia
 async function executeSequence() {
-    if (movementSequence.length === 0) return;
+    console.log('executeSequence started, sequence length:', movementSequence.length);
     
-    console.log('🎬 Starting sequence execution:', {
-        sequenceLength: movementSequence.length,
-        sequence: movementSequence,
-        playerStart: playerPosition,
-        goal: goalPosition,
-        isIOS
-    });
+    if (movementSequence.length === 0) return;
     
     timerRunning = false;
     disableMoveButtons();
     playSound('adventure');
     
     for (let i = 0; i < movementSequence.length; i++) {
+        console.log(`Processing move ${i + 1}/${movementSequence.length}:`, movementSequence[i]);
+        
         const move = movementSequence[i];
         let moved = false;
-        
-        console.log(`\n📍 Step ${i + 1}/${movementSequence.length}:`, move);
         
         // Hacer scroll automático al elemento actual dentro del contenedor
         const currentElement = document.getElementById(`seq-${i}`);
@@ -1035,29 +801,25 @@ async function executeSequence() {
         });
         
         if (currentElement && sequenceContainer) {
-            // Pequeño delay para asegurar que el DOM esté actualizado
-            setTimeout(() => {
-                // Centrar el elemento actual en el contenedor
-                const elementTop = currentElement.offsetTop;
-                const elementHeight = currentElement.offsetHeight;
-                const containerHeight = sequenceContainer.clientHeight;
-                
-                // Calcular la posición para centrar el elemento
-                const scrollPosition = elementTop - (containerHeight / 2) + (elementHeight / 2);
-                
-                console.log('Scrolling to:', {
-                    elementTop,
-                    elementHeight,
-                    containerHeight,
-                    scrollPosition
-                });
-                
-                // En iOS, usar scroll instantáneo para mejor rendimiento
-                sequenceContainer.scrollTo({
-                    top: scrollPosition,
-                    behavior: isIOS ? 'auto' : 'smooth'
-                });
-            }, 50);
+            // Centrar el elemento actual en el contenedor (sin setTimeout para iOS)
+            const elementTop = currentElement.offsetTop;
+            const elementHeight = currentElement.offsetHeight;
+            const containerHeight = sequenceContainer.clientHeight;
+            
+            // Calcular la posición para centrar el elemento
+            const scrollPosition = elementTop - (containerHeight / 2) + (elementHeight / 2);
+            
+            console.log('Scrolling to:', {
+                elementTop,
+                elementHeight,
+                containerHeight,
+                scrollPosition
+            });
+            
+            sequenceContainer.scrollTo({
+                top: scrollPosition,
+                behavior: 'smooth'
+            });
         }
         
         if (move === 'jump') {
@@ -1072,11 +834,7 @@ async function executeSequence() {
             
             if (!lastDir) {
                 stopMusic();
-                setTimeout(() => {
-                    playSound('error');
-                    // Después del error, volver a música de suspense
-                    setTimeout(() => playSound('suspense'), 500);
-                }, 100);
+                playSound('error');
                 showMessage('❌ Movimiento inválido', 'red');
                 enableButtons();
                 return;
@@ -1088,21 +846,13 @@ async function executeSequence() {
         }
         
         if (moved) {
-            console.log('✅ Movement successful, updating UI');
-            const tickElement = document.getElementById(`tick-${i}`);
-            const seqElement = document.getElementById(`seq-${i}`);
-            if (tickElement) tickElement.textContent = '✔';
-            if (seqElement) seqElement.classList.add('completed');
+            document.getElementById(`tick-${i}`).textContent = '✔';
+            document.getElementById(`seq-${i}`).classList.add('completed');
         }
         
         if (!moved) {
-            console.log('❌ Movement failed, stopping execution');
             stopMusic();
-            setTimeout(() => {
-                playSound('error');
-                // Después del error, volver a música de suspense
-                setTimeout(() => playSound('suspense'), 500);
-            }, 100);
+            playSound('error');
             showMessage('❌ Movimiento inválido', 'red');
             enableButtons();
             return;
@@ -1110,20 +860,8 @@ async function executeSequence() {
         
         // Verificar si ganó
         if (playerPosition[0] === goalPosition[0] && playerPosition[1] === goalPosition[1]) {
-            // NO detener la música de aventura, solo reproducir fanfarria encima
-            console.log('🎉 ¡Victoria! Reproduciendo fanfarria (aventura sigue sonando)');
-            
-            // Reproducir fanfarria como efecto de sonido (sin detener la música)
-            if (audioEnabled && audioUnlocked && audioElements.fanfare) {
-                console.log('🎺 Reproduciendo fanfarria de victoria');
-                audioElements.fanfare.currentTime = 0;
-                audioElements.fanfare.play()
-                    .then(() => console.log('✅ Fanfarria reproducida correctamente'))
-                    .catch(e => console.log('🔇 Error al reproducir fanfarria:', e.message));
-            } else {
-                console.log('🔇 Fanfarria no reproducida - Audio:', audioEnabled, 'Desbloqueado:', audioUnlocked);
-            }
-            
+            stopMusic();
+            playSound('fanfare');
             showMessage('🎉 ¡Ganaste!', 'green');
             showWinnerModal();
             enableButtons();
@@ -1136,16 +874,14 @@ async function executeSequence() {
     
     // Si terminó la secuencia sin ganar
     stopMusic();
-    setTimeout(() => {
-        playSound('error');
-        // Después del error, volver a música de suspense
-        setTimeout(() => playSound('suspense'), 500);
-    }, 100);
+    playSound('error');
     showMessage('No llegaste a la meta', 'orange');
     enableButtons();
 }
 
 function movePlayer(direction, jump = false) {
+    console.log('movePlayer called:', { direction, jump, currentPosition: playerPosition });
+    
     let dx = 0, dy = 0;
     
     if (direction === 'arriba') dy = -1;
@@ -1153,28 +889,13 @@ function movePlayer(direction, jump = false) {
     else if (direction === 'izquierda') dx = -1;
     else if (direction === 'derecha') dx = 1;
     
-    console.log('🎮 movePlayer:', {
-        direction,
-        jump,
-        currentPos: playerPosition,
-        dx,
-        dy,
-        isIOS
-    });
-    
     if (jump) {
         const mx = playerPosition[0] + dx;
         const my = playerPosition[1] + dy;
         const nx = playerPosition[0] + 2 * dx;
         const ny = playerPosition[1] + 2 * dy;
         
-        console.log('⏭️ Jump attempt:', {
-            middlePos: [mx, my],
-            targetPos: [nx, ny],
-            middleCell: maze[my]?.[mx],
-            targetCell: maze[ny]?.[nx],
-            inBounds: nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE
-        });
+        console.log('Jump attempt:', { mx, my, nx, ny });
         
         if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE &&
             mx >= 0 && mx < GRID_SIZE && my >= 0 && my < GRID_SIZE) {
@@ -1182,39 +903,31 @@ function movePlayer(direction, jump = false) {
                 markVisited(playerPosition[0], playerPosition[1]);
                 playerPosition[0] = nx;
                 playerPosition[1] = ny;
+                console.log('Jump successful, new position:', playerPosition);
                 drawMaze();
                 playSound('jump');
-                console.log('✅ Jump successful to:', [nx, ny]);
                 return true;
-            } else {
-                console.log('❌ Jump blocked - middle or target cell invalid');
             }
-        } else {
-            console.log('❌ Jump out of bounds');
         }
+        console.log('Jump failed');
         return false;
     }
     
     const nx = playerPosition[0] + dx;
     const ny = playerPosition[1] + dy;
     
-    console.log('🚶 Move attempt:', {
-        targetPos: [nx, ny],
-        targetCell: maze[ny]?.[nx],
-        inBounds: nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE,
-        isFloor: maze[ny]?.[nx] === 0
-    });
+    console.log('Move attempt:', { nx, ny, mazeCell: maze[ny]?.[nx] });
     
     if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE && maze[ny][nx] === 0) {
         markVisited(playerPosition[0], playerPosition[1]);
         playerPosition[0] = nx;
         playerPosition[1] = ny;
+        console.log('Move successful, new position:', playerPosition);
         drawMaze();
-        console.log('✅ Move successful to:', [nx, ny]);
         return true;
     }
     
-    console.log('❌ Move blocked or out of bounds');
+    console.log('Move failed');
     return false;
 }
 
@@ -1918,8 +1631,8 @@ async function generatePDF(difficulty) {
         document.body.appendChild(loadingMsg);
         
         // Cargar imágenes de cabecera y emoji
-        const cabeceraImg = await loadImageAsBase64('assets/cabecera.png');
-        const teacherImg = await loadImageAsBase64('assets/teacher.png');
+        const cabeceraImg = await loadImageAsBase64('cabecera.png');
+        const teacherImg = await loadImageAsBase64('teacher.png');
         const targetEmoji = emojiToBase64('🎯', 128); // Emoji de meta como imagen
         
         // Crear instancia de jsPDF
@@ -2260,7 +1973,13 @@ async function generatePDF(difficulty) {
 }
 
 function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    console.log(`Sleep called for ${ms}ms`);
+    return new Promise(resolve => {
+        setTimeout(() => {
+            console.log(`Sleep completed after ${ms}ms`);
+            resolve();
+        }, ms);
+    });
 }
 
 function showMessage(text, color) {
