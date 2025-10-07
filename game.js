@@ -31,6 +31,10 @@ const audioCheckbox = document.getElementById('audioEnabled');
 const audioActivationMessage = document.getElementById('audioActivationMessage');
 const startOverlay = document.getElementById('startOverlay');
 const startGameBtn = document.getElementById('startGameBtn');
+const loadingIndicator = document.getElementById('loadingIndicator');
+const loadingBar = document.getElementById('loadingBar');
+const loadingPercentage = document.getElementById('loadingPercentage');
+const startContent = document.getElementById('startContent');
 
 // Botones
 const upBtn = document.getElementById('upBtn');
@@ -197,14 +201,47 @@ function loadPlayerTexture(imageName) {
 function loadTextures() {
     return new Promise((resolve) => {
         let loadedCount = 0;
-        const totalTextures = 4;
+        const totalResources = 9; // 4 texturas + 5 audios
+        
+        // Función para actualizar el porcentaje de carga
+        const updateLoadingProgress = () => {
+            const percentage = Math.round((loadedCount / totalResources) * 100);
+            if (loadingBar) {
+                loadingBar.style.width = percentage + '%';
+            }
+            if (loadingPercentage) {
+                loadingPercentage.textContent = percentage + '%';
+            }
+            console.log(`📊 Progreso de carga: ${percentage}% (${loadedCount}/${totalResources})`);
+        };
         
         const checkAllLoaded = () => {
             loadedCount++;
-            if (loadedCount === totalTextures) {
+            updateLoadingProgress();
+            
+            if (loadedCount === totalResources) {
                 texturesLoaded = true;
-                console.log('Proceso de carga de texturas completado');
-                resolve();
+                console.log('✅ Todos los recursos cargados completamente');
+                
+                // Pequeño delay para mostrar el 100%
+                setTimeout(() => {
+                    // Ocultar indicador de carga con fade
+                    if (loadingIndicator) {
+                        loadingIndicator.style.opacity = '0';
+                        loadingIndicator.style.transition = 'opacity 0.3s ease';
+                        setTimeout(() => {
+                            loadingIndicator.style.display = 'none';
+                        }, 300);
+                    }
+                    // Mostrar botón de inicio con fade
+                    if (startContent) {
+                        startContent.style.display = 'block';
+                        setTimeout(() => {
+                            startContent.style.opacity = '1';
+                        }, 50);
+                    }
+                    resolve();
+                }, 500);
             }
         };
         
@@ -271,6 +308,43 @@ function loadTextures() {
             };
             texturePlayer.src = initialCharacter;
         }
+        
+        // Cargar audios (verificar que estén listos para reproducir)
+        const audioFiles = [
+            { element: audioElements.suspense, name: 'Suspense' },
+            { element: audioElements.adventure, name: 'Adventure' },
+            { element: audioElements.error, name: 'Error' },
+            { element: audioElements.fanfare, name: 'Fanfare' },
+            { element: audioElements.jump, name: 'Jump' }
+        ];
+        
+        audioFiles.forEach(({ element, name }) => {
+            if (element) {
+                // Verificar si el audio ya está listo
+                if (element.readyState >= 3) {
+                    console.log(`✓ Audio ${name} ya cargado`);
+                    checkAllLoaded();
+                } else {
+                    // Esperar a que se cargue
+                    element.addEventListener('canplaythrough', () => {
+                        console.log(`✓ Audio ${name} cargado`);
+                        checkAllLoaded();
+                    }, { once: true });
+                    
+                    // Fallback por si no se carga
+                    element.addEventListener('error', () => {
+                        console.warn(`✗ No se pudo cargar audio ${name}`);
+                        checkAllLoaded();
+                    }, { once: true });
+                    
+                    // Forzar carga
+                    element.load();
+                }
+            } else {
+                console.warn(`✗ Elemento de audio ${name} no encontrado`);
+                checkAllLoaded();
+            }
+        });
     });
 }
 
@@ -292,8 +366,12 @@ function init() {
     // Event listener para el botón de inicio del overlay
     if (startGameBtn && startOverlay) {
         console.log('✓ Overlay y botón encontrados, registrando evento...');
-        startGameBtn.addEventListener('click', () => {
-            console.log('✓ Botón de inicio clickeado');
+        
+        // Función para iniciar el juego
+        const startGame = (e) => {
+            e.preventDefault(); // Prevenir comportamiento por defecto
+            console.log('✓ Botón de inicio activado');
+            
             // Activar audio automáticamente
             audioEnabled = true;
             audioCheckbox.checked = true;
@@ -303,7 +381,11 @@ function init() {
             
             // Reproducir música de fondo
             playSound('suspense');
-        });
+        };
+        
+        // Agregar listeners para click y touch (móviles)
+        startGameBtn.addEventListener('click', startGame);
+        startGameBtn.addEventListener('touchend', startGame);
     } else {
         console.error('✗ No se encontró el overlay o el botón:', { startOverlay, startGameBtn });
     }

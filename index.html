@@ -2,7 +2,9 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Salvar al Juan</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,8 +19,20 @@
                 <img src="assets/cabecera.png" alt="Salvar al profe Juan" class="overlay-header-image">
                 <img src="assets/teacher.png" alt="Teacher" class="overlay-teacher-image">
             </div>
-            <p>Haz clic para comenzar</p>
-            <button id="startGameBtn" class="btn-start-game">▶️ INICIAR JUEGO</button>
+            
+            <!-- Indicador de carga -->
+            <div id="loadingIndicator" class="loading-indicator">
+                <div class="loading-bar-container">
+                    <div id="loadingBar" class="loading-bar"></div>
+                </div>
+                <p class="loading-text">Cargando recursos... <span id="loadingPercentage">0%</span></p>
+            </div>
+            
+            <!-- Contenido después de cargar -->
+            <div id="startContent" class="start-content" style="display: none;">
+                <p>Haz clic para comenzar</p>
+                <button id="startGameBtn" class="btn-start-game">▶️ INICIAR JUEGO</button>
+            </div>
         </div>
     </div>
 
