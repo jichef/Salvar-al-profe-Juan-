@@ -217,7 +217,7 @@ function loadTextures() {
             textureFloor = null;
             checkAllLoaded();
         };
-        textureFloor.src = 'textura_suelo.png';
+        textureFloor.src = 'assets/textura_suelo.png';
         
         // Cargar textura de muro
         textureWall = new Image();
@@ -230,7 +230,7 @@ function loadTextures() {
             textureWall = null;
             checkAllLoaded();
         };
-        textureWall.src = 'textura_muro.png';
+        textureWall.src = 'assets/textura_muro.png';
         
         // Cargar textura de trampa
         textureTrap = new Image();
@@ -243,13 +243,13 @@ function loadTextures() {
             textureTrap = null;
             checkAllLoaded();
         };
-        textureTrap.src = 'textura_trampa.png';
+        textureTrap.src = 'assets/textura_trampa.png';
         
         // Cargar imagen del jugador (usar el valor del selector)
-        const initialCharacter = characterSelect ? characterSelect.value : 'muñeco.png';
+        const initialCharacter = characterSelect ? characterSelect.value : 'assets/muñeco.png';
         
         // Si es muñeco.png, usar emoji directamente
-        if (initialCharacter === 'muñeco.png') {
+        if (initialCharacter === 'assets/muñeco.png') {
             PLAYER_EMOJI = '🧗'; // Emoji de aventurero escalando
             texturePlayer = null;
             console.log('✓ Usando emoji de aventurero 🧗');
