@@ -103,11 +103,12 @@ function initAudio() {
     }
 }
 
-function playSound(type, pauseMusic = false) {
+function playSound(type) {
     if (!audioEnabled) return;
     
     try {
         if (type === 'suspense' || type === 'adventure') {
+            // Solo cambiar música de fondo
             stopMusic();
             currentMusic = audioElements[type];
             if (currentMusic) {
@@ -115,20 +116,9 @@ function playSound(type, pauseMusic = false) {
                 currentMusic.play().catch(e => console.log('Audio play prevented:', e));
             }
         } else {
+            // Reproducir efecto de sonido sin afectar la música de fondo
             const audio = audioElements[type];
             if (audio) {
-                // Si se solicita pausar la música, guardar el estado
-                if (pauseMusic && currentMusic && !currentMusic.paused) {
-                    currentMusic.pause();
-                    
-                    // Cuando termine el efecto de sonido, reanudar la música
-                    audio.addEventListener('ended', () => {
-                        if (currentMusic && audioEnabled) {
-                            currentMusic.play().catch(e => console.log('Audio resume prevented:', e));
-                        }
-                    }, { once: true });
-                }
-                
                 audio.currentTime = 0;
                 audio.play().catch(e => console.log('Audio play prevented:', e));
             }
@@ -958,7 +948,7 @@ async function executeSequence() {
             }
             
             if (!lastDir) {
-                playSound('error', true); // Pausar música y reanudar después
+                playSound('error');
                 showMessage('❌ Movimiento inválido', 'red');
                 enableButtons();
                 return;
@@ -975,7 +965,7 @@ async function executeSequence() {
         }
         
         if (!moved) {
-            playSound('error', true); // Pausar música y reanudar después
+            playSound('error');
             showMessage('❌ Movimiento inválido', 'red');
             enableButtons();
             return;
@@ -983,7 +973,7 @@ async function executeSequence() {
         
         // Verificar si ganó
         if (playerPosition[0] === goalPosition[0] && playerPosition[1] === goalPosition[1]) {
-            playSound('fanfare', true); // Pausar música y reanudar después
+            playSound('fanfare');
             showMessage('🎉 ¡Ganaste!', 'green');
             showWinnerModal();
             enableButtons();
@@ -995,7 +985,7 @@ async function executeSequence() {
     }
     
     // Si terminó la secuencia sin ganar
-    playSound('error', true); // Pausar música y reanudar después
+    playSound('error');
     showMessage('No llegaste a la meta', 'orange');
     enableButtons();
 }
@@ -1752,8 +1742,8 @@ async function generatePDF(difficulty) {
         document.body.appendChild(loadingMsg);
         
         // Cargar imágenes de cabecera y emoji
-        const cabeceraImg = await loadImageAsBase64('assets/cabecera.png');
-        const teacherImg = await loadImageAsBase64('assets/teacher.png');
+        const cabeceraImg = await loadImageAsBase64('cabecera.png');
+        const teacherImg = await loadImageAsBase64('teacher.png');
         const targetEmoji = emojiToBase64('🎯', 128); // Emoji de meta como imagen
         
         // Crear instancia de jsPDF
@@ -1895,7 +1885,7 @@ async function generatePDF(difficulty) {
         // Agregar pie de página página 1
         doc.setFontSize(8);
         doc.setTextColor(100, 100, 100);
-        doc.text('Salvar al profe Juan - Laberintos Educativos', pageWidth / 2, pageHeight - 10, { align: 'center' });
+        doc.text('Saving Teacher Juan - Laberintos Educativos', pageWidth / 2, pageHeight - 10, { align: 'center' });
         
         // ============================================
         // PÁGINA 2: 20 mapas con soluciones (4 columnas × 5 filas)
@@ -2127,5 +2117,4 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {
     init();
-
 }
