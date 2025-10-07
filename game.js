@@ -29,6 +29,8 @@ const uploadCharacterBtn = document.getElementById('uploadCharacterBtn');
 const keyboardCheckbox = document.getElementById('keyboardEnabled');
 const audioCheckbox = document.getElementById('audioEnabled');
 const audioActivationMessage = document.getElementById('audioActivationMessage');
+const startOverlay = document.getElementById('startOverlay');
+const startGameBtn = document.getElementById('startGameBtn');
 
 // Botones
 const upBtn = document.getElementById('upBtn');
@@ -272,12 +274,37 @@ function loadTextures() {
     });
 }
 
+// Función para cerrar el overlay de inicio con fade
+function closeStartOverlay() {
+    if (startOverlay) {
+        startOverlay.classList.add('fade-out');
+        setTimeout(() => {
+            startOverlay.style.display = 'none';
+        }, 800); // Duración del fade-out
+    }
+}
+
 // Inicialización
 function init() {
     // Inicializar audio
     initAudio();
     
-    // Mostrar mensaje de activación de audio
+    // Event listener para el botón de inicio del overlay
+    if (startGameBtn && startOverlay) {
+        startGameBtn.addEventListener('click', () => {
+            // Activar audio automáticamente
+            audioEnabled = true;
+            audioCheckbox.checked = true;
+            
+            // Cerrar overlay con fade
+            closeStartOverlay();
+            
+            // Reproducir música de fondo
+            playSound('suspense');
+        });
+    }
+    
+    // Mostrar mensaje de activación de audio (fallback por si no hay overlay)
     if (audioActivationMessage) {
         audioActivationMessage.classList.add('show');
         
