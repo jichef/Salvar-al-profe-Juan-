@@ -1752,8 +1752,8 @@ async function generatePDF(difficulty) {
         document.body.appendChild(loadingMsg);
         
         // Cargar imágenes de cabecera y emoji
-        const cabeceraImg = await loadImageAsBase64('cabecera.png');
-        const teacherImg = await loadImageAsBase64('teacher.png');
+        const cabeceraImg = await loadImageAsBase64('assets/cabecera.png');
+        const teacherImg = await loadImageAsBase64('assets/teacher.png');
         const targetEmoji = emojiToBase64('🎯', 128); // Emoji de meta como imagen
         
         // Crear instancia de jsPDF
@@ -1895,7 +1895,7 @@ async function generatePDF(difficulty) {
         // Agregar pie de página página 1
         doc.setFontSize(8);
         doc.setTextColor(100, 100, 100);
-        doc.text('Saving Teacher Juan - Laberintos Educativos', pageWidth / 2, pageHeight - 10, { align: 'center' });
+        doc.text('Salvar al profe Juan - Laberintos Educativos', pageWidth / 2, pageHeight - 10, { align: 'center' });
         
         // ============================================
         // PÁGINA 2: 20 mapas con soluciones (4 columnas × 5 filas)
@@ -2127,4 +2127,5 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {
     init();
+
 }
